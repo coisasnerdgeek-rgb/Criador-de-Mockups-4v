@@ -581,7 +581,7 @@ export const ImageTreatmentPage: React.FC<ImageTreatmentPageProps> = ({
     const handleAdditionalImagesChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files) return;
 
-        const files = Array.from(e.target.files);
+        const files: File[] = Array.from(e.target.files);
         const currentCount = treatmentAdditionalImages.length;
         const limit = 4;
         
