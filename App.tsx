@@ -139,7 +139,7 @@ const App: React.FC = () => {
   const [savedPrints, setSavedPrints] = useLocalStorage<Print[]>('ai-clothing-mockup-saved-prints', []);
   const [selectedPrintId, setSelectedPrintId] = useLocalStorage<string | null>('ai-clothing-mockup-selected-print-id', null);
   const [selectedPrintIdBack, setSelectedPrintIdBack] = useLocalStorage<string | null>('ai-clothing-mockup-selected-print-id-back', null);
-  const [savedMasks, setSavedMasks] = useLocalStorage<SavedMask[]>('ai-clothing-mockup-saved-masks', []);
+  const [savedMasks, setSavedMasks] = useState<SavedMask[]>([]); // Now managed by Supabase
   const [clothingCategories, setClothingCategories] = useLocalStorage<string[]>('ai-clothing-mockup-categories', initialClothingCategories);
   const [customColors, setCustomColors] = useLocalStorage<string[]>('ai-clothing-mockup-custom-colors', []);
   const [savedImagePrompts, setSavedImagePrompts] = useState<SavedImagePrompt[]>([]); // Now managed by Supabase
@@ -220,7 +220,7 @@ const App: React.FC = () => {
     setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
   };
 
-  // Fetch clothes from Supabase on initial load
+  // Fetch data from Supabase on initial load
   useEffect(() => {
     const fetchClothes = async () => {
         const { data, error: dbError } = await supabase
@@ -280,8 +280,33 @@ const App: React.FC = () => {
         }
     };
 
+    const fetchSavedMasks = async () => {
+        const { data, error: dbError } = await supabase
+            .from('saved_masks')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (dbError) {
+            console.error('Error fetching saved masks:', dbError);
+            setError('Não foi possível carregar as máscaras salvas do banco de dados.');
+        } else if (data) {
+            setSavedMasks(data.map(item => ({
+                id: item.id,
+                name: item.name,
+                x: item.x,
+                y: item.y,
+                width: item.width,
+                height: item.height,
+                rotation: item.rotation,
+                skewX: item.skew_x,
+                skewY: item.skew_y,
+            })));
+        }
+    };
+
     fetchClothes();
     fetchSavedImagePrompts();
+    fetchSavedMasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -664,32 +689,85 @@ const handleMaskCancel = () => {
     };
     
 
-  const handleSaveMask = (maskToSave: Mask, name: string): boolean => {
+  const handleSaveMask = async (maskToSave: Mask, name: string): Promise<boolean> => {
     const trimmedName = name.trim();
     if (!trimmedName) return false;
     if (savedMasks.some(m => m.name.trim().toLowerCase() === trimmedName.toLowerCase())) {
         return false;
     }
 
-    const newMask: SavedMask = {
-        ...maskToSave,
+    const newSavedMask: SavedMask = {
         id: crypto.randomUUID(),
-        name: trimmedName
+        name: trimmedName,
+        ...maskToSave,
     };
-    setSavedMasks(prev => [...prev, newMask]);
+
+    const { data, error: insertError } = await supabase.from('saved_masks').insert({
+        id: newSavedMask.id,
+        name: newSavedMask.name,
+        x: newSavedMask.x,
+        y: newSavedMask.y,
+        width: newSavedMask.width,
+        height: newSavedMask.height,
+        rotation: newSavedMask.rotation,
+        skew_x: newSavedMask.skewX,
+        skew_y: newSavedMask.skewY,
+    }).select().single();
+
+    if (insertError) {
+        console.error('Error inserting saved mask:', insertError);
+        setError('Falha ao salvar máscara no banco de dados.');
+        return false;
+    }
+
+    setSavedMasks(prev => [...prev, {
+        id: data.id,
+        name: data.name,
+        x: data.x,
+        y: data.y,
+        width: data.width,
+        height: data.height,
+        rotation: data.rotation,
+        skewX: data.skew_x,
+        skewY: data.skew_y,
+    }]);
     return true;
   };
 
-  const handleDeleteSavedMask = (idToDelete: string) => {
-    setSavedMasks(prev => prev.filter(m => m.id !== idToDelete));
+  const handleDeleteSavedMask = async (idToDelete: string) => {
+    if (window.confirm("Tem certeza que deseja excluir esta máscara salva?")) {
+        const { error: deleteError } = await supabase
+            .from('saved_masks')
+            .delete()
+            .eq('id', idToDelete);
+
+        if (deleteError) {
+            console.error('Error deleting saved mask:', deleteError);
+            setError('Falha ao excluir máscara do banco de dados.');
+        } else {
+            setSavedMasks(prev => prev.filter(m => m.id !== idToDelete));
+        }
+    }
   };
 
-  const handleUpdateSavedMask = (idToUpdate: string, newName: string): boolean => {
+  const handleUpdateSavedMask = async (idToUpdate: string, newName: string): Promise<boolean> => {
     const trimmedName = newName.trim();
     if (!trimmedName) return false;
     if (savedMasks.some(m => m.id !== idToUpdate && m.name.trim().toLowerCase() === trimmedName.toLowerCase())) {
         return false;
     }
+
+    const { error: updateError } = await supabase
+        .from('saved_masks')
+        .update({ name: trimmedName })
+        .eq('id', idToUpdate);
+
+    if (updateError) {
+        console.error('Error updating saved mask:', updateError);
+        setError('Falha ao atualizar nome da máscara no banco de dados.');
+        return false;
+    }
+
     setSavedMasks(prev => prev.map(m => m.id === idToUpdate ? { ...m, name: trimmedName } : m));
     return true;
   };
@@ -1428,6 +1506,21 @@ const handleCancelBatchGeneration = () => {
                 name: item.name,
                 prompt: item.prompt,
             }));
+
+            // Fetch saved masks from Supabase
+            const { data: savedMasksData, error: smError } = await supabase.from('saved_masks').select('*');
+            if (smError) throw smError;
+            const cleanSavedMasks = savedMasksData.map(item => ({
+                id: item.id,
+                name: item.name,
+                x: item.x,
+                y: item.y,
+                width: item.width,
+                height: item.height,
+                rotation: item.rotation,
+                skewX: item.skew_x,
+                skewY: item.skew_y,
+            }));
     
             const backupData = {
                 savedClothes: cleanSavedClothes,
@@ -1438,7 +1531,7 @@ const handleCancelBatchGeneration = () => {
                 clothingCategories,
                 promptSettings,
                 customColors,
-                savedMasks,
+                savedMasks: cleanSavedMasks, // Use fetched masks
                 savedImagePrompts: cleanSavedImagePrompts, // Use fetched prompts
                 dataType: 'mockup-creator-backup',
                 version: '2.4-colocated'
@@ -1498,6 +1591,7 @@ const handleCancelBatchGeneration = () => {
             const treatmentPrintsData = data.treatmentPrints || [];
             const treatmentHistoryData = data.treatmentHistory || [];
             const savedImagePromptsData = data.savedImagePrompts || [];
+            const savedMasksData = data.savedMasks || [];
 
             const totalImages = (clothesData.length * 3) + printsData.length + treatmentPrintsData.length;
             let processedImages = 0;
@@ -1555,6 +1649,18 @@ const handleCancelBatchGeneration = () => {
                 prompt: item.prompt,
             }));
 
+            const rehydratedSavedMasks = savedMasksData.map((item: any) => ({
+                id: item.id,
+                name: item.name,
+                x: item.x,
+                y: item.y,
+                width: item.width,
+                height: item.height,
+                rotation: item.rotation,
+                skewX: item.skewX,
+                skewY: item.skewY,
+            }));
+
             const keysToClear = [
                 'ai-clothing-mockup-saved-clothes', 'ai-clothing-mockup-history', 'ai-clothing-mockup-saved-prints',
                 'ai-mockup-treatment-prints', 'ai-clothing-mockup-selected-print-id', 'ai-clothing-mockup-selected-print-id-back',
@@ -1568,6 +1674,7 @@ const handleCancelBatchGeneration = () => {
             await supabase.from('treatment_prints').delete().neq('id', '00000000-0000-0000-0000-000000000000');
             await supabase.from('treatment_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
             await supabase.from('saved_image_prompts').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+            await supabase.from('saved_masks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
 
             const dbClothesRecords = rehydratedClothes.map((c: any) => ({
@@ -1618,13 +1725,26 @@ const handleCancelBatchGeneration = () => {
                 prompt: p.prompt,
             }));
             await supabase.from('saved_image_prompts').insert(dbSavedImagePromptsRecords);
+
+            const dbSavedMasksRecords = rehydratedSavedMasks.map((m: any) => ({
+                id: m.id,
+                name: m.name,
+                x: m.x,
+                y: m.y,
+                width: m.width,
+                height: m.height,
+                rotation: m.rotation,
+                skew_x: m.skewX,
+                skew_y: m.skewY,
+            }));
+            await supabase.from('saved_masks').insert(dbSavedMasksRecords);
             
             localStorage.setItem('ai-clothing-mockup-saved-prints', JSON.stringify(rehydratedPrints));
             localStorage.setItem('ai-clothing-mockup-history', JSON.stringify(data.generationHistory || []));
             localStorage.setItem('ai-clothing-mockup-categories', JSON.stringify(data.clothingCategories || initialClothingCategories));
             localStorage.setItem('ai-clothing-mockup-prompt-settings', JSON.stringify(data.promptSettings || defaultPromptSettings));
             localStorage.setItem('ai-clothing-mockup-custom-colors', JSON.stringify(data.customColors || []));
-            localStorage.setItem('ai-clothing-mockup-saved-masks', JSON.stringify(data.savedMasks || []));
+            // localStorage.setItem('ai-clothing-mockup-saved-masks', JSON.stringify(data.savedMasks || [])); // No longer needed for local storage
             
             setImportStatus({ message: "Importação concluída com sucesso! Recarregando...", error: false, progress: 100 });
             await new Promise(resolve => setTimeout(resolve, 1500));
