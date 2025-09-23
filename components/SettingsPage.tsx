@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { PromptSettings, ImportStatus, Pose, MockupPrompts } from '../types';
 import { CheckIcon, PencilIcon, TrashIcon, ExportIcon, ImportIcon, LoadingSpinner } from './Icons';
@@ -9,24 +8,17 @@ interface SettingsPageProps {
   promptSettings: PromptSettings;
   setPromptSettings: React.Dispatch<React.SetStateAction<PromptSettings>>;
   defaultPromptSettings: PromptSettings;
-  onExport: () => void;
-  onImport: (file: File) => void;
-  importStatus: ImportStatus | null;
-  setImportStatus: React.Dispatch<React.SetStateAction<ImportStatus | null>>;
 }
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({ 
     clothingCategories, setClothingCategories, 
-    promptSettings, setPromptSettings, defaultPromptSettings,
-    onExport, onImport, importStatus, setImportStatus
+    promptSettings, setPromptSettings, defaultPromptSettings
 }) => {
     const [activeTab, setActiveTab] = useState('mockup');
     const [newCategory, setNewCategory] = useState('');
     const [editingCategory, setEditingCategory] = useState<{ index: number; name: string } | null>(null);
     const [tempPromptSettings, setTempPromptSettings] = useState(promptSettings);
     const [showSavedNotification, setShowSavedNotification] = useState(false);
-    const importInputRef = useRef<HTMLInputElement>(null);
-    const [isDraggingOverImport, setIsDraggingOverImport] = useState(false);
     
     // States for Backgrounds tab
     const [newBgTheme, setNewBgTheme] = useState('');
@@ -134,47 +126,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
        }
     };
     
-    const handleImportClick = () => {
-        if (importStatus) return;
-        setImportStatus(null);
-        importInputRef.current?.click();
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            onImport(e.target.files[0]);
-            e.target.value = '';
-        }
-    };
-
-    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!importStatus) setIsDraggingOverImport(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDraggingOverImport(false);
-    };
-
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (importStatus) return;
-        setIsDraggingOverImport(false);
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            const file = e.dataTransfer.files[0];
-            if (file.type === 'application/zip' || file.type === 'application/x-zip-compressed' || file.name.endsWith('.zip')) {
-                onImport(file);
-            } else {
-                 setImportStatus({ message: "Arquivo inválido. Por favor, solte um arquivo .zip.", error: true });
-            }
-        }
-    };
-
-
     return (
         <div className="animate-fade-in space-y-8 max-w-6xl mx-auto">
             <div className="flex justify-between items-center">
@@ -229,69 +180,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                             <button onClick={handleAddCategory} className="bg-cyan-600 text-white font-bold py-2 px-4 rounded-md hover:bg-cyan-500">Adicionar</button>
                         </div>
                     </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
-                        <h2 className="text-2xl font-bold text-cyan-500 dark:text-cyan-400 mb-4">Backup e Restauração</h2>
-                        <div className="space-y-4">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Salve todo o seu trabalho (roupas, estampas, histórico e configurações) em um único arquivo .zip, ou restaure a partir de um backup.</p>
-                            <button onClick={onExport} className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-500 transition-colors">
-                                <ExportIcon /> Exportar Dados (.zip)
-                            </button>
-                            
-                            <div
-                                onClick={handleImportClick}
-                                onDrop={handleDrop}
-                                onDragOver={handleDragOver}
-                                onDragLeave={handleDragLeave}
-                                className={`w-full p-6 text-center border-2 border-dashed rounded-lg transition-all duration-300 ${
-                                    isDraggingOverImport 
-                                        ? 'border-purple-400 bg-purple-500/10 text-purple-600 dark:bg-purple-900/20 dark:text-purple-300' 
-                                        : importStatus
-                                        ? 'border-purple-500 bg-gray-100 dark:bg-gray-900/50'
-                                        : 'border-gray-400 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-cyan-500 hover:text-cyan-400 cursor-pointer'
-                                }`}
-                            >
-                                {importStatus ? (
-                                    <div className="flex flex-col items-center justify-center space-y-4 min-h-[116px]">
-                                        {importStatus.error ? (
-                                            <>
-                                                <p className="font-semibold text-red-500 dark:text-red-400">Falha na Importação</p>
-                                                <p className="text-sm text-red-600 dark:text-red-300">{importStatus.message}</p>
-                                                <button onClick={() => setImportStatus(null)} className="mt-2 bg-gray-500 dark:bg-gray-600 text-white font-bold py-1 px-4 rounded-md text-sm hover:bg-gray-600 dark:hover:bg-gray-500">
-                                                    Tentar Novamente
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <LoadingSpinner className="h-10 w-10 text-purple-500 dark:text-purple-400" />
-                                                <p className="font-semibold text-purple-600 dark:text-purple-300">{importStatus.message}</p>
-                                                {importStatus.progress !== undefined && (
-                                                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2">
-                                                        <div className="bg-purple-500 h-2.5 rounded-full transition-all duration-300" style={{ width: `${importStatus.progress}%` }}></div>
-                                                    </div>
-                                                )}
-                                            </>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center pointer-events-none min-h-[116px]">
-                                        <ImportIcon className="h-10 w-10 mb-2"/>
-                                        <p className="font-semibold">Arraste e solte o arquivo .zip aqui</p>
-                                        <p className="text-sm">ou clique para selecionar</p>
-                                    </div>
-                                )}
-                            </div>
-                            <input
-                                ref={importInputRef}
-                                type="file"
-                                accept=".zip,application/zip"
-                                className="hidden"
-                                onChange={handleFileChange}
-                            />
-                            <p className="text-xs text-yellow-600 dark:text-yellow-400 text-center p-2 bg-yellow-400/20 dark:bg-yellow-900/30 rounded-md border border-yellow-500/50 dark:border-yellow-700/50"><strong>Atenção:</strong> Importar um arquivo substituirá todos os dados atuais.</p>
-                        </div>
-                    </div>
-
                 </div>
 
                 <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
@@ -342,7 +230,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                                                         <button onClick={() => handleDeleteBgTheme(name)} className="p-1 text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"><TrashIcon/></button>
                                                     </div>
                                                 </div>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400 font-mono bg-gray-200 dark:bg-gray-900 p-2 rounded-md whitespace-pre-wrap">{prompt}</p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{prompt}</p>
                                             </>
                                         )}
                                     </div>

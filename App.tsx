@@ -1960,10 +1960,6 @@ const handleCancelBatchGeneration = () => {
                     promptSettings={promptSettings}
                     setPromptSettings={setPromptSettings}
                     defaultPromptSettings={defaultPromptSettings}
-                    onExport={handleExportData}
-                    onImport={handleImportData}
-                    importStatus={importStatus}
-                    setImportStatus={setImportStatus}
                 />;
             case 'treatment':
                  return <ImageTreatmentPage
