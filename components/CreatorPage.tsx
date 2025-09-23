@@ -530,12 +530,12 @@ const CreatorGenerationOptionsAndActionsSection = memo((props: {
 
     return (
         <>
-            <div className="bg-white dark:bg-gray-800 rounded-3xl p-3 shadow-lg space-y-4 animated-mask-outline"> {/* Reduced padding and space-y */}
-                <h2 className="text-xl font-bold text-purple-500 dark:text-purple-400 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl p-3 shadow-lg space-y-3 animated-mask-outline"> {/* Reduced padding and space-y */}
+                <h2 className="text-xl font-bold text-purple-500 dark:text-purple-400 flex items-center gap-2 mb-2">
                     <MagicWandIcon className="h-6 w-6" /> Geração por IA
                 </h2>
                 <div>
-                    <label className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-1 block">Tipo de Geração</label> {/* Reduced mb */}
+                    <label className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-0.5 block">Tipo de Geração</label> {/* Reduced mb */}
                     <div className="grid grid-cols-3 gap-2">
                         <button onClick={() => setGenerationType('standard')} className={`p-2 text-sm rounded-md ${generationType === 'standard' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}><PersonIcon className="mx-auto mb-1 h-5 w-5" /> Padrão</button>
                         <button onClick={() => setGenerationType('poses-3')} className={`p-2 text-sm rounded-md ${generationType === 'poses-3' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}><PosesIcon className="mx-auto mb-1 h-5 w-5" /> Poses</button>
@@ -543,7 +543,7 @@ const CreatorGenerationOptionsAndActionsSection = memo((props: {
                     </div>
                 </div>
                 <div>
-                    <label className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-1 block">Proporção da Imagem</label> {/* Reduced mb */}
+                    <label className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-0.5 block">Proporção da Imagem</label> {/* Reduced mb */}
                     <div className="grid grid-cols-5 gap-2 text-gray-800 dark:text-white">
                         <button onClick={() => setGenerationAspectRatio('1:1')} className={`p-2 rounded-md flex justify-center items-center ${generationAspectRatio === '1:1' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`} title="1:1 (Quadrado)"><AspectRatioOneOneIcon /></button>
                         <button onClick={() => setGenerationAspectRatio('3:4')} className={`p-2 rounded-md flex justify-center items-center ${generationAspectRatio === '3:4' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`} title="3:4 (Retrato)"><AspectRatioThreeFourIcon /></button>
@@ -554,7 +554,7 @@ const CreatorGenerationOptionsAndActionsSection = memo((props: {
                 </div>
                 {generationType === 'poses-3' && (
                     <div className="space-y-2 p-3 bg-gray-100/50 dark:bg-gray-900/50 rounded-md animate-fade-in">
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400 mb-2">Selecionar Poses</h4>
+                        <h4 className="font-semibold text-gray-500 dark:text-gray-400 mb-1">Selecionar Poses</h4>
                         <div className="grid grid-cols-2 gap-2">
                             {(Object.keys(promptSettings.poses) as Pose[]).map(pose => (<button key={pose} onClick={() => handlePoseSelection(pose)} className={`p-2 rounded-md cursor-pointer text-sm w-full transition-colors ${selectedPoses.includes(pose) ? 'bg-purple-600 text-white font-bold' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}>{pose}</button>))}
                         </div>
@@ -562,7 +562,7 @@ const CreatorGenerationOptionsAndActionsSection = memo((props: {
                 )}
                 {generationType === 'models' && (
                     <div className="space-y-2 p-3 bg-gray-100/50 dark:bg-gray-900/50 rounded-md animate-fade-in">
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">Filtros de Modelo</h4>
+                        <h4 className="font-semibold text-gray-500 dark:text-gray-400 mb-1">Filtros de Modelo</h4>
                         <select value={modelFilter.gender} onChange={e => setModelFilter(f => ({...f, gender: e.target.value}))} className="w-full bg-gray-200 dark:bg-gray-700 text-sm rounded p-1 border border-gray-300 dark:border-gray-600"><option>Feminino</option><option>Masculino</option></select>
                         <select value={modelFilter.age} onChange={e => setModelFilter(f => ({...f, age: e.target.value}))} className="w-full bg-gray-200 dark:bg-gray-700 text-sm rounded p-1 border border-gray-300 dark:border-gray-600"><option>Infantil (5-12)</option><option>Jovem (18-25)</option><option>Adulto (26-40)</option><option>Maduro (41+)</option></select>
                         <select value={modelFilter.ethnicity} onChange={e => setModelFilter(f => ({...f, ethnicity: e.target.value}))} className="w-full bg-gray-200 dark:bg-gray-700 text-sm rounded p-1 border border-gray-300 dark:border-gray-600"><option>Caucasiana</option><option>Negra</option><option>Asiática</option><option>Hispânica</option><option>Indígena</option></select>
@@ -570,7 +570,7 @@ const CreatorGenerationOptionsAndActionsSection = memo((props: {
                 )}
                 {generationType === 'standard' && (
                     <div>
-                        <label className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-1 block">Lados para Gerar</label> {/* Reduced mb */}
+                        <label className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-0.5 block">Lados para Gerar</label> {/* Reduced mb */}
                         <div className="grid grid-cols-3 gap-2">
                             <button onClick={() => setGenerationMode('front')} disabled={!selectedClothing} className={`p-2 text-sm rounded-md ${generationMode === 'front' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700'} disabled:bg-gray-300 dark:disabled:bg-gray-600`}>Frente</button>
                             <button onClick={() => setGenerationMode('back')} disabled={!selectedClothing?.base64Back} className={`p-2 text-sm rounded-md ${generationMode === 'back' ? 'bg-purple-600 text-white' : 'bg-gray-200 dark:bg-gray-700'} disabled:bg-gray-300 dark:disabled:bg-gray-600`}>Costas</button>
@@ -579,7 +579,7 @@ const CreatorGenerationOptionsAndActionsSection = memo((props: {
                     </div>
                 )}
                 <div>
-                    <div className="flex justify-between items-center mb-1"> {/* Reduced mb */}
+                    <div className="flex justify-between items-center mb-0.5"> {/* Reduced mb */}
                         <label className="text-md font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"><PaletteIcon /> Cor da Roupa</label>
                          <button onClick={handleSuggestColors} disabled={!selectedPrintFront || isSuggestingColors} className="text-xs flex items-center gap-1.5 bg-purple-600/50 text-white px-3 py-1.5 rounded-md hover:bg-purple-600/80 disabled:bg-gray-600 disabled:cursor-not-allowed">
                              {isSuggestingColors ? <LoadingSpinner className="h-4 w-4" /> : <MagicWandIcon className="h-4 w-4" />}
@@ -596,13 +596,13 @@ const CreatorGenerationOptionsAndActionsSection = memo((props: {
                     />
                 </div>
                 <div>
-                    <label className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-1 block flex items-center gap-2"><LayersIcon/> Modo de Mesclagem</label> {/* Reduced mb */}
+                    <label className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-0.5 block flex items-center gap-2"><LayersIcon/> Modo de Mesclagem</label> {/* Reduced mb */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                         {blendModes.map(mode => (<button key={mode} onClick={() => setBlendMode(mode)} disabled={!selectedClothing} className={`p-2 text-sm rounded-md transition-colors ${blendMode === mode ? 'bg-purple-600 text-white font-bold' : 'bg-gray-200 dark:bg-gray-700'} disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:text-gray-500 dark:disabled:text-gray-400`} title={`Aplicar estampa com o modo ${mode}`}>{mode}</button>))}
                     </div>
                 </div>
                 <div>
-                    <label className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-1 block flex items-center gap-2"><ImageIcon /> Fundo</label> {/* Reduced mb */}
+                    <label className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-0.5 block flex items-center gap-2"><ImageIcon /> Fundo</label> {/* Reduced mb */}
                     <select value={backgroundTheme} onChange={e => { setBackgroundTheme(e.target.value); setCustomBackgroundFile(null); }} className="w-full bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white rounded-md p-2 mb-2">
                         {Object.keys(promptSettings.backgrounds).map(theme => <option key={theme} value={theme}>{theme}</option>)}
                         {customBackgroundFile && <option value="Personalizado">Personalizado</option>}
@@ -612,7 +612,7 @@ const CreatorGenerationOptionsAndActionsSection = memo((props: {
             </div>
             
             <div className="bg-white dark:bg-gray-800 rounded-3xl p-4 shadow-lg sticky top-24 self-start space-y-3 animated-mask-outline">
-                <h2 className="text-xl font-bold text-center mb-2 text-purple-500 dark:text-purple-400">Gerar Mockup</h2>
+                <h2 className="text-xl font-bold text-center mb-1 text-purple-500 dark:text-purple-400">Gerar Mockup</h2>
                 <button onClick={handleGenerate} disabled={!canGenerate} className="w-full bg-green-600 text-white font-bold text-lg py-4 rounded-lg shadow-lg hover:bg-green-500 transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-105 disabled:bg-gray-500 dark:disabled:bg-gray-600 disabled:cursor-not-allowed disabled:scale-100 disabled:hover:bg-gray-500 dark:disabled:hover:bg-gray-600">
                     {isLoading ? <LoadingSpinner /> : <MagicWandIcon />}
                     {isLoading ? 'Gerando...' : 'Gerar'}
@@ -668,7 +668,7 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     return (
         <div className="relative">
             {/* Main content area */}
-            <div className={`transition-all duration-300 ease-in-out ${isSidebarOpen ? 'xl:ml-[25rem]' : 'ml-0'}`}> {/* Changed mr to ml */}
+            <div className={`transition-all duration-300 ease-in-out ${isSidebarOpen ? 'xl:ml-[25rem]' : 'ml-0'}`}>
                 <div className="grid grid-cols-1 xl:grid-cols-9 gap-6">
                     <div className="xl:col-span-3 space-y-6">
                         <CreatorClothingSection {...clothingProps} />
@@ -753,17 +753,16 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
             </div>
 
             {/* Sidebar Toggle Button */}
-            {/* Changed right to left, rounded-l-lg to rounded-r-lg */}
             <button 
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 className={`fixed top-1/2 transform -translate-y-1/2 bg-purple-600 text-white p-2 rounded-r-lg z-40 shadow-lg transition-all duration-300 ease-in-out ${isSidebarOpen ? 'left-[24rem]' : 'left-0'}`}
                 title={isSidebarOpen ? "Esconder Painel de IA" : "Mostrar Painel de IA"}
             >
-                {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />} {/* Swapped icons */}
+                {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
             </button>
 
             {/* Sidebar Panel */}
-            <div className={`fixed top-16 left-0 h-[calc(100vh-4rem)] w-96 bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}> {/* Changed right to left, translate-x-full to -translate-x-full */}
+            <div className={`fixed top-16 left-0 h-[calc(100vh-4rem)] w-96 bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="overflow-y-auto h-full scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900">
                     <div className="p-4 space-y-6">
                         <CreatorGenerationOptionsAndActionsSection 
