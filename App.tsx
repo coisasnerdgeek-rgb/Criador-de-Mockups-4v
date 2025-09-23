@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import JSZip from 'jszip';
 
@@ -14,6 +11,7 @@ import {
     initialPosePrompts, defaultMockupPrompts, defaultPromptSettings, initialImagePrompts,
     inspirationItems
 } from './constants';
+import { supabase } from './integrations/supabase/client';
 
 
 // Icons
@@ -41,7 +39,7 @@ import {
     SavedClothing, Print, HistoryItem, SavedMask, SavedImagePrompt, TreatmentHistoryItem, Mask,
     GenerationType, GenerationMode, Pose, ActivePage, ModelFilter, ClothingToMask, ClothingToEdit,
     NewClothingFileState, ActiveNewClothingInputTab, ImportStatus, PromptSettings, MockupPrompts,
-    NewClothingForm, BatchGenerationStatus, InspirationSettings, ColorPalette
+    NewClothingForm, BatchGenerationStatus, InspirationSettings, ColorPalette, PrintCombination
 } from './types';
 
 
@@ -136,7 +134,7 @@ const App: React.FC = () => {
   
   // --- Persisted State using useLocalStorage Hook ---
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('ai-mockup-theme', 'dark');
-  const [savedClothes, setSavedClothes] = useLocalStorage<SavedClothing[]>('ai-clothing-mockup-saved-clothes', []);
+  const [savedClothes, setSavedClothes] = useState<SavedClothing[]>([]);
   const [generationHistory, setGenerationHistory] = useLocalStorage<HistoryItem[]>('ai-clothing-mockup-history', []);
   const [savedPrints, setSavedPrints] = useLocalStorage<Print[]>('ai-clothing-mockup-saved-prints', []);
   const [selectedPrintId, setSelectedPrintId] = useLocalStorage<string | null>('ai-clothing-mockup-selected-print-id', null);
@@ -222,69 +220,51 @@ const App: React.FC = () => {
     setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
   };
 
-  // Initial Load & Migration Logic
+  // Fetch clothes from Supabase on initial load
   useEffect(() => {
-    // This is a placeholder for fetching shared data. In a real-world scenario
-    // with a backend, you would fetch data here and merge it with local data.
-    apiService.fetchSharedData().then(sharedData => {
-        if (sharedData) {
-            // Logic to merge sharedData with localStorage data would go here.
-            // For now, we continue to load from localStorage.
-            console.log("Simulated shared data fetched:", sharedData);
+    const fetchClothes = async () => {
+        const { data, error: dbError } = await supabase
+            .from('clothes')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (dbError) {
+            console.error('Error fetching clothes:', dbError);
+            setError('Não foi possível carregar as roupas do banco de dados.');
+        } else if (data) {
+            const mappedData: SavedClothing[] = data.map(item => ({
+                id: item.id,
+                name: item.name,
+                category: item.category,
+                base64: item.base64,
+                mimeType: item.mime_type,
+                width: item.width,
+                height: item.height,
+                mask: item.mask,
+                originalBase64: item.original_base64,
+                imageUrl: item.image_url,
+                base64Back: item.base64_back,
+                mimeTypeBack: item.mime_type_back,
+                widthBack: item.width_back,
+                heightBack: item.height_back,
+                maskBack: item.mask_back,
+                imageUrlBack: item.image_url_back,
+                printCombinations: item.print_combinations || [],
+                isMinimizedInAssociations: item.is_minimized_in_associations || false,
+            }));
+            setSavedClothes(mappedData);
+            if (mappedData.length > 0) {
+                setSelectedClothing(mappedData[0]);
+                setActiveNewClothingTab('saved');
+            } else {
+                setActiveNewClothingTab('new');
+            }
         }
-    });
+    };
 
-    const storedClothes = localStorage.getItem('ai-clothing-mockup-saved-clothes');
-    if (storedClothes) {
-      try {
-        let parsedClothes: SavedClothing[] = JSON.parse(storedClothes);
-        if (parsedClothes.length > 0) {
-          let needsUpdate = false;
-          
-          // Migration for slots
-          if (parsedClothes.some((c: any) => c.printCombinations && c.printCombinations[0]?.hasOwnProperty('frontPrintId'))) {
-            parsedClothes = parsedClothes.map((clothing: any) => {
-              const combinations = (clothing.printCombinations || []).map((oldCombo: any) => {
-                const newSlots: any[] = [];
-                if (oldCombo.frontPrintId) newSlots.push({ id: crypto.randomUUID(), type: 'front', printId: oldCombo.frontPrintId });
-                if (oldCombo.showSecondSlot && oldCombo.secondSlotPrintId) newSlots.push({ id: crypto.randomUUID(), type: oldCombo.secondSlotType || 'back', printId: oldCombo.secondSlotPrintId });
-                return { ...oldCombo, slots: newSlots };
-              });
-              return { ...clothing, printCombinations: combinations };
-            });
-            needsUpdate = true;
-          }
-          
-          // Migration for combination names
-          if (parsedClothes.some(c => c.printCombinations && c.printCombinations.length > 0 && c.printCombinations[0].name === undefined)) {
-              parsedClothes = parsedClothes.map(clothing => ({
-                  ...clothing,
-                  printCombinations: (clothing.printCombinations || []).map((combo, index) => ({
-                      ...combo,
-                      name: (combo as any).name || `Combinação #${index + 1}`
-                  }))
-              }));
-              needsUpdate = true;
-          }
-
-          if (needsUpdate) {
-             setSavedClothes(parsedClothes); // Persist migrated data
-          }
-
-          setSelectedClothing(parsedClothes[0]);
-        } else {
-          setActiveNewClothingTab('new');
-        }
-      } catch (e) {
-        console.error("Failed to parse or migrate clothing data from localStorage", e);
-        localStorage.removeItem('ai-clothing-mockup-saved-clothes');
-        setActiveNewClothingTab('new');
-      }
-    } else {
-      setActiveNewClothingTab('new');
-    }
+    fetchClothes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on initial mount
+  }, []);
 
 
   const handleAddCustomColor = (color: string) => {
@@ -424,14 +404,21 @@ const App: React.FC = () => {
         const { clothing, isBack } = clothingToEdit;
         const updatedClothing = isBack ? { ...clothing, maskBack: mask } : { ...clothing, mask: mask };
         
-        // Simulate API call for backend persistence
-        apiService.saveSharedClothing(updatedClothing);
+        const { error: updateError } = await supabase
+            .from('clothes')
+            .update({ [isBack ? 'mask_back' : 'mask']: mask })
+            .eq('id', clothing.id);
 
-        setSavedClothes(prevClothes => 
-            prevClothes.map(c => c.id === clothing.id ? updatedClothing : c)
-        );
-        if (selectedClothing?.id === clothing.id) {
-            setSelectedClothing(updatedClothing);
+        if (updateError) {
+            setError("Falha ao atualizar a máscara no banco de dados.");
+            console.error(updateError);
+        } else {
+            setSavedClothes(prevClothes => 
+                prevClothes.map(c => c.id === clothing.id ? updatedClothing : c)
+            );
+            if (selectedClothing?.id === clothing.id) {
+                setSelectedClothing(updatedClothing);
+            }
         }
         setClothingToEdit(null);
         return;
@@ -450,17 +437,33 @@ const App: React.FC = () => {
                 imageUrlBack: newClothingForm.urlBack.trim() || undefined,
             };
             
-            const originalClothing = savedClothes.find(c => c.id === clothingForBackImageId);
-            if(originalClothing) {
-              const updatedClothing = { ...originalClothing, ...updatedClothingData };
-              apiService.saveSharedClothing(updatedClothing); // Simulate API call
-              setSavedClothes(prev => prev.map(c => c.id === clothingForBackImageId ? updatedClothing : c));
-              if (selectedClothing?.id === clothingForBackImageId) {
-                  setSelectedClothing(prev => prev ? updatedClothing : null);
-              }
+            const { error: updateError } = await supabase
+                .from('clothes')
+                .update({
+                    base64_back: updatedClothingData.base64Back,
+                    mime_type_back: updatedClothingData.mimeTypeBack,
+                    width_back: updatedClothingData.widthBack,
+                    height_back: updatedClothingData.heightBack,
+                    mask_back: updatedClothingData.maskBack,
+                    image_url_back: updatedClothingData.imageUrlBack,
+                })
+                .eq('id', clothingForBackImageId);
+
+            if (updateError) {
+                setError("Falha ao salvar a imagem de costas no banco de dados.");
+                console.error(updateError);
+            } else {
+                const originalClothing = savedClothes.find(c => c.id === clothingForBackImageId);
+                if(originalClothing) {
+                  const updatedClothing = { ...originalClothing, ...updatedClothingData };
+                  setSavedClothes(prev => prev.map(c => c.id === clothingForBackImageId ? updatedClothing : c));
+                  if (selectedClothing?.id === clothingForBackImageId) {
+                      setSelectedClothing(prev => prev ? updatedClothing : null);
+                  }
+                }
             }
         } catch (err) {
-            setError("Falha ao salvar a imagem de costas.");
+            setError("Falha ao processar a imagem de costas.");
         } finally {
             setClothingToMask(null);
             setClothingForBackImageId(null);
@@ -471,6 +474,7 @@ const App: React.FC = () => {
     // Case 3: Saving a mask for a brand new clothing item
     if (clothingToMask) {
         try {
+            let finalClothing: SavedClothing | null = null;
             if (clothingToMask.isBack) {
                 // Saving BACK mask of a NEW item
                 if (!pendingFrontData) {
@@ -478,10 +482,10 @@ const App: React.FC = () => {
                     return;
                 }
                 const backBase64 = await fileToBase64(clothingToMask.file);
-                const finalClothing: SavedClothing = {
+                finalClothing = {
                     ...pendingFrontData.base,
                     mask: pendingFrontData.mask,
-                    id: crypto.randomUUID(),
+                    id: '', // Will be set by DB
                     base64Back: backBase64,
                     mimeTypeBack: clothingToMask.file.type,
                     widthBack: clothingToMask.width,
@@ -491,13 +495,6 @@ const App: React.FC = () => {
                     printCombinations: [],
                     isMinimizedInAssociations: false,
                 };
-                apiService.saveSharedClothing(finalClothing); // Simulate API call
-                setSavedClothes(prev => [...prev, finalClothing]);
-                setSelectedClothing(finalClothing);
-                setActiveNewClothingTab('saved');
-                setClothingToMask(null);
-                setPendingFrontData(null);
-                resetNewClothingForm();
             } else {
                 // Saving FRONT mask of a NEW item
                 const base64String = await fileToBase64(clothingToMask.file);
@@ -520,27 +517,62 @@ const App: React.FC = () => {
                         reader.onload = () => resolve(reader.result as string);
                         reader.onerror = reject;
                     });
-                    // Open the mask editor again for the back image
                     setClothingToMask({ file: backFile, dataUrl, ...dimensions, isBack: true });
+                    return; // Wait for back mask
                 } else {
-                    const finalClothing: SavedClothing = { 
+                    finalClothing = { 
                         ...clothingBase, 
                         mask, 
-                        id: crypto.randomUUID(), 
+                        id: '', // Will be set by DB
                         maskBack: null,
                         printCombinations: [],
                         isMinimizedInAssociations: false,
                     };
-                    apiService.saveSharedClothing(finalClothing); // Simulate API call
-                    setSavedClothes(prev => [...prev, finalClothing]);
-                    setSelectedClothing(finalClothing);
-                    setActiveNewClothingTab('saved');
-                    setClothingToMask(null);
-                    resetNewClothingForm();
                 }
             }
+
+            if (finalClothing) {
+                const { data: insertedData, error: insertError } = await supabase
+                    .from('clothes')
+                    .insert({
+                        name: finalClothing.name,
+                        category: finalClothing.category,
+                        base64: finalClothing.base64,
+                        mime_type: finalClothing.mimeType,
+                        width: finalClothing.width,
+                        height: finalClothing.height,
+                        mask: finalClothing.mask,
+                        image_url: finalClothing.imageUrl,
+                        base64_back: finalClothing.base64Back,
+                        mime_type_back: finalClothing.mimeTypeBack,
+                        width_back: finalClothing.widthBack,
+                        height_back: finalClothing.heightBack,
+                        mask_back: finalClothing.maskBack,
+                        image_url_back: finalClothing.imageUrlBack,
+                        print_combinations: finalClothing.printCombinations,
+                        is_minimized_in_associations: finalClothing.isMinimizedInAssociations,
+                    })
+                    .select()
+                    .single();
+
+                if (insertError) {
+                    throw insertError;
+                }
+
+                const newClothingFromDb: SavedClothing = {
+                    ...finalClothing,
+                    id: insertedData.id,
+                };
+
+                setSavedClothes(prev => [newClothingFromDb, ...prev]);
+                setSelectedClothing(newClothingFromDb);
+                setActiveNewClothingTab('saved');
+                resetNewClothingForm();
+            }
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Não foi possível processar o arquivo da roupa.");
+            setError(err instanceof Error ? err.message : "Não foi possível salvar a roupa no banco de dados.");
+            console.error(err);
+        } finally {
             setClothingToMask(null);
             setPendingFrontData(null);
         }
@@ -559,7 +591,7 @@ const handleMaskCancel = () => {
     setClothingToEdit({ clothing, isBack });
   }, []);
   
-    const handleUpdateClothingName = (clothingId: string, newName: string): string | null => {
+    const handleUpdateClothingName = async (clothingId: string, newName: string): Promise<string | null> => {
         const name = newName.trim();
         if (!name) {
             return "O nome não pode ficar em branco.";
@@ -568,14 +600,19 @@ const handleMaskCancel = () => {
             return "Já existe uma roupa com este nome.";
         }
         
-        const originalClothing = savedClothes.find(c => c.id === clothingId);
-        if (originalClothing) {
-            const updatedClothing = { ...originalClothing, name };
-            apiService.saveSharedClothing(updatedClothing); // Simulate API call
-            setSavedClothes(prev => prev.map(c => c.id === clothingId ? updatedClothing : c));
-            if (selectedClothing?.id === clothingId) {
-                setSelectedClothing(prev => prev ? { ...prev, name } : null);
-            }
+        const { error: updateError } = await supabase
+            .from('clothes')
+            .update({ name })
+            .eq('id', clothingId);
+
+        if (updateError) {
+            console.error(updateError);
+            return "Falha ao atualizar o nome no banco de dados.";
+        }
+
+        setSavedClothes(prev => prev.map(c => c.id === clothingId ? { ...c, name } : c));
+        if (selectedClothing?.id === clothingId) {
+            setSelectedClothing(prev => prev ? { ...prev, name } : null);
         }
 
         setEditingClothingName(null);
@@ -639,18 +676,27 @@ const handleMaskCancel = () => {
   };
 
 
-  const handleDeleteClothing = useCallback((idToDelete: string) => {
+  const handleDeleteClothing = useCallback(async (idToDelete: string) => {
     if(window.confirm("Tem certeza que deseja excluir esta peça de roupa e todas as suas associações?")) {
-        setSavedClothes(prevClothes => {
-            const newClothes = prevClothes.filter(c => c.id !== idToDelete);
-            if (selectedClothing?.id === idToDelete) {
-                // Para melhorar a UX, seleciona o primeiro item disponível após a exclusão.
-                setSelectedClothing(newClothes.length > 0 ? newClothes[0] : null);
-            }
-            return newClothes;
-        });
+        const { error: deleteError } = await supabase
+            .from('clothes')
+            .delete()
+            .eq('id', idToDelete);
+
+        if (deleteError) {
+            setError("Falha ao excluir a roupa do banco de dados.");
+            console.error(deleteError);
+        } else {
+            setSavedClothes(prevClothes => {
+                const newClothes = prevClothes.filter(c => c.id !== idToDelete);
+                if (selectedClothing?.id === idToDelete) {
+                    setSelectedClothing(newClothes.length > 0 ? newClothes[0] : null);
+                }
+                return newClothes;
+            });
+        }
     }
-  }, [selectedClothing?.id, setSavedClothes]);
+  }, [selectedClothing?.id]);
   
    const getPrecomposite = async (url: string | null) => {
       if (!url) return null;
@@ -1190,7 +1236,7 @@ const handleCancelBatchGeneration = () => {
       })));
       if (selectedPrintId === idToDelete) setSelectedPrintId(null);
       if (selectedPrintIdBack === idToDelete) setSelectedPrintIdBack(null);
-  }, [selectedPrintId, selectedPrintIdBack, setSavedPrints, setSavedClothes, setSelectedPrintId, setSelectedPrintIdBack]);
+  }, [selectedPrintId, selectedPrintIdBack, setSavedPrints, setSelectedPrintId, setSelectedPrintIdBack]);
 
   const handleRemovePrintBg = useCallback(async (printId: string) => {
       const print = savedPrints.find(p => p.id === printId);
@@ -1245,6 +1291,16 @@ const handleCancelBatchGeneration = () => {
             
             const generatedBgBase64 = await generateImageWithBackground(precomposite.base64, precomposite.mimeType, promptSettings.backgrounds[backgroundTheme]);
             
+            const updateData = {
+                base64: generatedBgBase64,
+                mime_type: 'image/png',
+                original_base64: selectedClothing.originalBase64 ?? selectedClothing.base64,
+            };
+
+            const { error: updateError } = await supabase.from('clothes').update(updateData).eq('id', selectedClothing.id);
+
+            if (updateError) throw updateError;
+
             const updateClothingWithBg = (c: SavedClothing) => ({
                 ...c,
                 base64: generatedBgBase64,
@@ -1257,16 +1313,29 @@ const handleCancelBatchGeneration = () => {
 
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to generate background");
+            console.error(err);
         } finally {
             setIsGeneratingBackground(false);
         }
     };
 
-    const handleRevertBackground = () => {
+    const handleRevertBackground = async () => {
         if (!selectedClothing || !selectedClothing.originalBase64) return;
         
         const originalBase64 = selectedClothing.originalBase64;
         
+        const updateData = {
+            base64: originalBase64,
+            original_base64: null,
+        };
+
+        const { error: updateError } = await supabase.from('clothes').update(updateData).eq('id', selectedClothing.id);
+        if (updateError) {
+            setError("Failed to revert background in database.");
+            console.error(updateError);
+            return;
+        }
+
         const revertClothing = (c: SavedClothing) => {
             const { originalBase64: _, ...rest } = c;
             return { ...rest, base64: originalBase64! };
@@ -1442,7 +1511,32 @@ const handleCancelBatchGeneration = () => {
             ];
             keysToClear.forEach(key => localStorage.removeItem(key));
             
-            localStorage.setItem('ai-clothing-mockup-saved-clothes', JSON.stringify(rehydratedClothes));
+            // Clear existing clothes in DB before importing
+            await supabase.from('clothes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
+            const dbRecords = rehydratedClothes.map((c: any) => ({
+                id: c.id,
+                name: c.name,
+                category: c.category,
+                base64: c.base64,
+                mime_type: c.mimeType,
+                width: c.width,
+                height: c.height,
+                mask: c.mask,
+                original_base64: c.originalBase64,
+                image_url: c.imageUrl,
+                base64_back: c.base64Back,
+                mime_type_back: c.mimeTypeBack,
+                width_back: c.widthBack,
+                height_back: c.heightBack,
+                mask_back: c.maskBack,
+                image_url_back: c.imageUrlBack,
+                print_combinations: c.printCombinations,
+                is_minimized_in_associations: c.isMinimizedInAssociations,
+            }));
+
+            await supabase.from('clothes').insert(dbRecords);
+            
             localStorage.setItem('ai-clothing-mockup-saved-prints', JSON.stringify(rehydratedPrints));
             localStorage.setItem('ai-mockup-treatment-prints', JSON.stringify(rehydratedTreatmentPrints));
             localStorage.setItem('ai-clothing-mockup-treatment-history', JSON.stringify(data.treatmentHistory || []));
@@ -1493,6 +1587,22 @@ const handleCancelBatchGeneration = () => {
         } finally {
             setIsSuggestingColors(false);
         }
+    };
+
+    const handleUpdateClothing = async (clothingId: string, updates: Partial<SavedClothing>) => {
+        const dbUpdates: any = {};
+        if (updates.printCombinations) dbUpdates.print_combinations = updates.printCombinations;
+        if (updates.isMinimizedInAssociations !== undefined) dbUpdates.is_minimized_in_associations = updates.isMinimizedInAssociations;
+
+        const { error: updateError } = await supabase.from('clothes').update(dbUpdates).eq('id', clothingId);
+
+        if (updateError) {
+            setError("Falha ao salvar as alterações da associação.");
+            console.error(updateError);
+            return;
+        }
+
+        setSavedClothes(prev => prev.map(c => c.id === clothingId ? { ...c, ...updates } : c));
     };
 
 
@@ -1634,7 +1744,7 @@ const handleCancelBatchGeneration = () => {
             case 'associations':
                 return <AssociationsPage 
                     savedClothes={savedClothes} 
-                    setSavedClothes={setSavedClothes} 
+                    onUpdateClothing={handleUpdateClothing}
                     savedPrints={savedPrints} 
                     clothingCategories={clothingCategories}
                     onBatchExport={handleGeneratePreviewsBatch}

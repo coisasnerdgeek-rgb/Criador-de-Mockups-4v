@@ -1,6 +1,3 @@
-
-
-
 // FIX: Added useRef to the import statement.
 import React, { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import JSZip from 'jszip';
@@ -195,29 +192,66 @@ const ClothingAssociationCard = memo<{
   clothing: SavedClothing;
   savedPrints: Print[];
   onRenameClothing: (clothing: SavedClothing) => void;
-  onToggleMinimize: (clothingId: string) => void;
+  onUpdateClothing: (clothingId: string, updates: Partial<SavedClothing>) => Promise<void>;
   onDeleteClothing: (clothingId: string) => void;
-  onAddCombination: (clothingId: string) => void;
-  onDeleteCombination: (clothingId: string, comboId: string) => void;
-  onUpdateCombinationName: (clothingId: string, comboId: string, newName: string) => void;
-  onAddSlotToCombination: (clothingId: string, comboId: string, type: 'front' | 'back') => void;
-  onDeleteSlotFromCombination: (clothingId: string, comboId: string, slotId: string) => void;
-  onUpdateSlotPrint: (clothingId: string, comboId: string, slotId: string, printId: string | null) => void;
   onExportCombination: (clothing: SavedClothing, combination: PrintCombination) => Promise<void>;
   onPreviewDownload: (clothing: SavedClothing, print: Print | undefined, side: 'front' | 'back') => Promise<void>;
   onUploadPrint: (files: FileList) => void;
 }>(({
-    clothing, savedPrints, onRenameClothing, onToggleMinimize, onDeleteClothing, onAddCombination, onDeleteCombination,
-    onUpdateCombinationName, onAddSlotToCombination, onDeleteSlotFromCombination, onUpdateSlotPrint, onExportCombination,
-    onPreviewDownload, onUploadPrint
+    clothing, savedPrints, onRenameClothing, onUpdateClothing, onDeleteClothing,
+    onExportCombination, onPreviewDownload, onUploadPrint
 }) => {
     const [editingCombination, setEditingCombination] = useState<{ comboId: string; name: string } | null>(null);
     
-    const handleSaveCombinationName = () => {
+    const handleToggleMinimize = () => {
+        onUpdateClothing(clothing.id, { isMinimizedInAssociations: !clothing.isMinimizedInAssociations });
+    };
+
+    const handleAddCombination = () => {
+        const newCombination: PrintCombination = {
+            id: crypto.randomUUID(),
+            name: `Combinação #${clothing.printCombinations.length + 1}`,
+            slots: [{ id: crypto.randomUUID(), type: 'front', printId: null }]
+        };
+        onUpdateClothing(clothing.id, { printCombinations: [...clothing.printCombinations, newCombination] });
+    };
+
+    const handleDeleteCombination = (comboId: string) => {
+        const newCombinations = clothing.printCombinations.filter(combo => combo.id !== comboId);
+        onUpdateClothing(clothing.id, { printCombinations: newCombinations });
+    };
+
+    const handleUpdateCombinationName = () => {
         if (!editingCombination) return;
         const { comboId, name } = editingCombination;
-        onUpdateCombinationName(clothing.id, comboId, name);
+        const newCombinations = clothing.printCombinations.map(combo => 
+            combo.id === comboId ? { ...combo, name } : combo
+        );
+        onUpdateClothing(clothing.id, { printCombinations: newCombinations });
         setEditingCombination(null);
+    };
+
+    const handleAddSlotToCombination = (comboId: string, type: 'front' | 'back') => {
+        const newCombinations = clothing.printCombinations.map(combo => 
+            combo.id === comboId ? { ...combo, slots: [...combo.slots, { id: crypto.randomUUID(), type, printId: null }] } : combo
+        );
+        onUpdateClothing(clothing.id, { printCombinations: newCombinations });
+    };
+
+    const handleDeleteSlotFromCombination = (comboId: string, slotId: string) => {
+        const newCombinations = clothing.printCombinations.map(combo => 
+            combo.id === comboId ? { ...combo, slots: combo.slots.filter(slot => slot.id !== slotId) } : combo
+        );
+        onUpdateClothing(clothing.id, { printCombinations: newCombinations });
+    };
+
+    const handleUpdateSlotPrint = (comboId: string, slotId: string, printId: string | null) => {
+        const newCombinations = clothing.printCombinations.map(combo => 
+            combo.id === comboId ? { ...combo, slots: combo.slots.map(slot => 
+                slot.id === slotId ? { ...slot, printId } : slot
+            )} : combo
+        );
+        onUpdateClothing(clothing.id, { printCombinations: newCombinations });
     };
 
     return (
@@ -234,7 +268,7 @@ const ClothingAssociationCard = memo<{
                 </div>
                 <div className="flex items-center gap-3">
                     <CombinationCounter combinations={clothing.printCombinations} />
-                    <button onClick={() => onToggleMinimize(clothing.id)} className={`font-bold py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2 text-sm ${clothing.isMinimizedInAssociations ? 'bg-cyan-600 text-white hover:bg-cyan-500' : 'bg-green-600 text-white hover:bg-green-500'}`}>
+                    <button onClick={handleToggleMinimize} className={`font-bold py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2 text-sm ${clothing.isMinimizedInAssociations ? 'bg-cyan-600 text-white hover:bg-cyan-500' : 'bg-green-600 text-white hover:bg-green-500'}`}>
                         {clothing.isMinimizedInAssociations ?  <><PencilIcon/> Editar</> : <><BookmarkIcon /> Salvar</> }
                     </button>
                     <button onClick={() => onDeleteClothing(clothing.id)} className="p-2.5 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-red-400 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" title="Deletar Roupa"><TrashIcon /></button>
@@ -256,8 +290,8 @@ const ClothingAssociationCard = memo<{
                                                 type="text"
                                                 value={editingCombination.name}
                                                 onChange={(e) => setEditingCombination({ comboId: combo.id, name: e.target.value })}
-                                                onBlur={handleSaveCombinationName}
-                                                onKeyDown={(e) => e.key === 'Enter' && handleSaveCombinationName()}
+                                                onBlur={handleUpdateCombinationName}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleUpdateCombinationName()}
                                                 className="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-1 font-semibold"
                                                 autoFocus
                                             />
@@ -268,7 +302,7 @@ const ClothingAssociationCard = memo<{
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button onClick={() => onExportCombination(clothing, combo)} className="flex items-center gap-2 bg-purple-600 text-white font-bold py-2 px-3 rounded-md text-sm hover:bg-purple-500"><ZipIcon /> Exportar</button>
-                                        <button onClick={() => onDeleteCombination(clothing.id, combo.id)} className="p-2 rounded-md bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white transition-colors" title="Deletar Combinação"><TrashIcon /></button>
+                                        <button onClick={() => handleDeleteCombination(combo.id)} className="p-2 rounded-md bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white transition-colors" title="Deletar Combinação"><TrashIcon /></button>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-12 gap-4">
@@ -280,16 +314,16 @@ const ClothingAssociationCard = memo<{
                                                         title={slot.type === 'front' ? `Frente ${combo.slots.filter(s => s.type === 'front').length > 1 ? `#${index+1}` : ''}` : `Costas`}
                                                         prints={savedPrints.filter(p => !usedPrintIdsInCombo.has(p.id) || p.id === slot.printId)}
                                                         selectedPrintId={slot.printId}
-                                                        onSelect={(printId) => onUpdateSlotPrint(clothing.id, combo.id, slot.id, printId)}
+                                                        onSelect={(printId) => handleUpdateSlotPrint(combo.id, slot.id, printId)}
                                                         onUpload={onUploadPrint}
                                                     />
                                                 </div>
-                                                <button onClick={() => onDeleteSlotFromCombination(clothing.id, combo.id, slot.id)} className="p-2 self-end mb-2.5 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-md hover:bg-red-500 hover:text-white" title="Remover Estampa"><MinusCircleIcon /></button>
+                                                <button onClick={() => handleDeleteSlotFromCombination(combo.id, slot.id)} className="p-2 self-end mb-2.5 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-md hover:bg-red-500 hover:text-white" title="Remover Estampa"><MinusCircleIcon /></button>
                                             </div>
                                         ))}
                                         <div className="flex gap-2">
-                                            <button onClick={() => onAddSlotToCombination(clothing.id, combo.id, 'front')} className="flex-1 flex items-center justify-center gap-1 text-sm bg-cyan-600/20 text-cyan-700 dark:text-cyan-300 rounded-md py-2 hover:bg-cyan-600/40"><PlusCircleIcon /> Frente</button>
-                                            <button onClick={() => onAddSlotToCombination(clothing.id, combo.id, 'back')} disabled={!clothing.base64Back} className="flex-1 flex items-center justify-center gap-1 text-sm bg-violet-600/20 text-violet-700 dark:text-violet-300 rounded-md py-2 hover:bg-violet-600/40 disabled:bg-gray-600/20 disabled:text-gray-500 disabled:cursor-not-allowed"><PlusCircleIcon /> Costas</button>
+                                            <button onClick={() => handleAddSlotToCombination(combo.id, 'front')} className="flex-1 flex items-center justify-center gap-1 text-sm bg-cyan-600/20 text-cyan-700 dark:text-cyan-300 rounded-md py-2 hover:bg-cyan-600/40"><PlusCircleIcon /> Frente</button>
+                                            <button onClick={() => handleAddSlotToCombination(combo.id, 'back')} disabled={!clothing.base64Back} className="flex-1 flex items-center justify-center gap-1 text-sm bg-violet-600/20 text-violet-700 dark:text-violet-300 rounded-md py-2 hover:bg-violet-600/40 disabled:bg-gray-600/20 disabled:text-gray-500 disabled:cursor-not-allowed"><PlusCircleIcon /> Costas</button>
                                         </div>
                                     </div>
                                     <div className="col-span-12 md:col-span-7">
@@ -308,7 +342,7 @@ const ClothingAssociationCard = memo<{
                             </div>
                         );
                     })}
-                    <button onClick={() => onAddCombination(clothing.id)} className="w-full bg-green-600/20 text-green-700 dark:text-green-300 font-semibold py-3 rounded-lg border-2 border-dashed border-green-600/30 hover:bg-green-600/40 transition-colors">
+                    <button onClick={handleAddCombination} className="w-full bg-green-600/20 text-green-700 dark:text-green-300 font-semibold py-3 rounded-lg border-2 border-dashed border-green-600/30 hover:bg-green-600/40 transition-colors">
                         Adicionar Nova Combinação
                     </button>
                 </div>
@@ -320,7 +354,7 @@ const ClothingAssociationCard = memo<{
 
 interface AssociationsPageProps {
     savedClothes: SavedClothing[];
-    setSavedClothes: React.Dispatch<React.SetStateAction<SavedClothing[]>>;
+    onUpdateClothing: (clothingId: string, updates: Partial<SavedClothing>) => Promise<void>;
     savedPrints: Print[];
     clothingCategories: string[];
     onBatchExport: () => void;
@@ -332,7 +366,7 @@ interface AssociationsPageProps {
 }
 
 export const AssociationsPage: React.FC<AssociationsPageProps> = ({
-    savedClothes, setSavedClothes, savedPrints, clothingCategories, 
+    savedClothes, onUpdateClothing, savedPrints, clothingCategories, 
     onBatchExport, onDeleteClothing, onRenameClothing, onUploadPrint,
     onBatchGenerateMockups, isBatchGenerating
 }) => {
@@ -351,79 +385,6 @@ export const AssociationsPage: React.FC<AssociationsPageProps> = ({
             return categoryMatch && printMatch;
         });
     }, [savedClothes, activeCategory, selectedPrintFilter]);
-
-    const handleToggleMinimize = useCallback((clothingId: string) => {
-        setSavedClothes(prev => prev.map(c => 
-            c.id === clothingId ? { ...c, isMinimizedInAssociations: !c.isMinimizedInAssociations } : c
-        ));
-    }, [setSavedClothes]);
-
-    const handleAddCombination = useCallback((clothingId: string) => {
-        setSavedClothes(prev => prev.map(c => {
-            if (c.id === clothingId) {
-                const newCombination: PrintCombination = {
-                    id: crypto.randomUUID(),
-                    name: `Combinação #${c.printCombinations.length + 1}`,
-                    slots: [{ id: crypto.randomUUID(), type: 'front', printId: null }]
-                };
-                return { ...c, printCombinations: [...c.printCombinations, newCombination] };
-            }
-            return c;
-        }));
-    }, [setSavedClothes]);
-
-    const handleDeleteCombination = useCallback((clothingId: string, comboId: string) => {
-        setSavedClothes(prev => prev.map(c => 
-            c.id === clothingId 
-                ? { ...c, printCombinations: c.printCombinations.filter(combo => combo.id !== comboId) } 
-                : c
-        ));
-    }, [setSavedClothes]);
-
-    const handleUpdateCombinationName = useCallback((clothingId: string, comboId: string, newName: string) => {
-        setSavedClothes(prev => prev.map(c => 
-            c.id === clothingId 
-                ? { ...c, printCombinations: c.printCombinations.map(combo => 
-                        combo.id === comboId ? { ...combo, name: newName } : combo
-                    ) } 
-                : c
-        ));
-    }, [setSavedClothes]);
-
-    const handleAddSlotToCombination = useCallback((clothingId: string, comboId: string, type: 'front' | 'back') => {
-        setSavedClothes(prev => prev.map(c => {
-            if (c.id === clothingId) {
-                return { ...c, printCombinations: c.printCombinations.map(combo => 
-                    combo.id === comboId ? { ...combo, slots: [...combo.slots, { id: crypto.randomUUID(), type, printId: null }] } : combo
-                )};
-            }
-            return c;
-        }));
-    }, [setSavedClothes]);
-
-    const handleDeleteSlotFromCombination = useCallback((clothingId: string, comboId: string, slotId: string) => {
-        setSavedClothes(prev => prev.map(c => {
-            if (c.id === clothingId) {
-                return { ...c, printCombinations: c.printCombinations.map(combo => 
-                    combo.id === comboId ? { ...combo, slots: combo.slots.filter(slot => slot.id !== slotId) } : combo
-                )};
-            }
-            return c;
-        }));
-    }, [setSavedClothes]);
-
-    const handleUpdateSlotPrint = useCallback((clothingId: string, comboId: string, slotId: string, printId: string | null) => {
-        setSavedClothes(prev => prev.map(c => {
-            if (c.id === clothingId) {
-                return { ...c, printCombinations: c.printCombinations.map(combo => 
-                    combo.id === comboId ? { ...combo, slots: combo.slots.map(slot => 
-                        slot.id === slotId ? { ...slot, printId } : slot
-                    )} : combo
-                )};
-            }
-            return c;
-        }));
-    }, [setSavedClothes]);
 
     const handleExportCombination = useCallback(async (clothing: SavedClothing, combination: PrintCombination) => {
         const zip = new JSZip();
@@ -516,11 +477,10 @@ export const AssociationsPage: React.FC<AssociationsPageProps> = ({
                 {filteredClothes.map(clothing => (
                     <ClothingAssociationCard
                         key={clothing.id} clothing={clothing} savedPrints={savedPrints}
-                        onRenameClothing={onRenameClothing} onToggleMinimize={handleToggleMinimize}
-                        onDeleteClothing={onDeleteClothing} onAddCombination={handleAddCombination}
-                        onDeleteCombination={handleDeleteCombination} onUpdateCombinationName={handleUpdateCombinationName}
-                        onAddSlotToCombination={handleAddSlotToCombination} onDeleteSlotFromCombination={handleDeleteSlotFromCombination}
-                        onUpdateSlotPrint={handleUpdateSlotPrint} onExportCombination={handleExportCombination}
+                        onRenameClothing={onRenameClothing} 
+                        onUpdateClothing={onUpdateClothing}
+                        onDeleteClothing={onDeleteClothing} 
+                        onExportCombination={handleExportCombination}
                         onPreviewDownload={handlePreviewDownload} onUploadPrint={onUploadPrint}
                     />
                 ))}
