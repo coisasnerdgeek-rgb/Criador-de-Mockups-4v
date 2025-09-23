@@ -13,7 +13,7 @@ import {
     PersonIcon, PosesIcon, UploadIcon, ZipIcon, PositionIcon, ZoomInIcon, LayersIcon, 
     UsersIcon, PaletteIcon, NoBackgroundIcon, ClothingIcon, TagIcon, BookmarkIcon, PlusCircleIcon, 
     MinusCircleIcon, ResetIcon, RevertIcon, AspectRatioOneOneIcon, AspectRatioThreeFourIcon, 
-    AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon
+    AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, ChevronLeftIcon, ChevronRightIcon
 } from './Icons';
 // FIX: Removed circular dependency. These types are imported from the types file.
 
@@ -636,6 +636,7 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     const { selectedClothing } = clothingProps;
     const { precompositePreviewUrl, precompositePreviewUrlBack, precompositePreviewUrlBefore } = uiProps;
 
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isDraggingPrint, setIsDraggingPrint] = useState(false);
     const printInputRef = useRef<HTMLInputElement>(null);
 
@@ -665,93 +666,112 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     }, []);
 
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-            <div className="xl:col-span-3 space-y-6">
-                <CreatorClothingSection {...clothingProps} />
-                <CreatorPrintSection 
-                    {...printsProps} 
-                    onAddPrintClick={handleAddPrintClick}
-                    onPrintDrop={handlePrintDrop}
-                    onPrintDragOver={handlePrintDragOver}
-                    onPrintDragLeave={handlePrintDragLeave}
-                    isDraggingPrint={isDraggingPrint}
-                />
-            </div>
+        <div className="relative">
+            {/* Main content area */}
+            <div className={`transition-all duration-300 ease-in-out ${isSidebarOpen ? 'xl:mr-[25rem]' : 'mr-0'}`}>
+                <div className="grid grid-cols-1 xl:grid-cols-9 gap-6">
+                    <div className="xl:col-span-3 space-y-6">
+                        <CreatorClothingSection {...clothingProps} />
+                        <CreatorPrintSection 
+                            {...printsProps} 
+                            onAddPrintClick={handleAddPrintClick}
+                            onPrintDrop={handlePrintDrop}
+                            onPrintDragOver={handlePrintDragOver}
+                            onPrintDragLeave={handlePrintDragLeave}
+                            isDraggingPrint={isDraggingPrint}
+                        />
+                    </div>
 
-            <div className="xl:col-span-6 space-y-6">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h3 className="text-center text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Frente</h3>
-                        <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2">
-                            {precompositePreviewUrl ? (
-                                precompositePreviewUrlBefore ? (
-                                    <ImageCompareSlider beforeSrc={precompositePreviewUrlBefore} afterSrc={precompositePreviewUrl} alt="Comparação com/sem fundo" />
-                                ) : (
-                                    <ZoomableImage src={precompositePreviewUrl} alt="Pré-visualização da Frente" />
-                                )
-                            ) : (
-                                <div className="text-center text-gray-500">
-                                    <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
-                                    <p>Pré-visualização da Frente</p>
+                    <div className="xl:col-span-6 space-y-6">
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 className="text-center text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Frente</h3>
+                                <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2">
+                                    {precompositePreviewUrl ? (
+                                        precompositePreviewUrlBefore ? (
+                                            <ImageCompareSlider beforeSrc={precompositePreviewUrlBefore} afterSrc={precompositePreviewUrl} alt="Comparação com/sem fundo" />
+                                        ) : (
+                                            <ZoomableImage src={precompositePreviewUrl} alt="Pré-visualização da Frente" />
+                                        )
+                                    ) : (
+                                        <div className="text-center text-gray-500">
+                                            <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
+                                            <p>Pré-visualização da Frente</p>
+                                        </div>
+                                    )}
+                                    <PreviewToolbar
+                                        generationType={generationProps.generationType}
+                                        setGenerationType={generationProps.setGenerationType}
+                                        backgroundTheme={generationProps.backgroundTheme}
+                                        setBackgroundTheme={generationProps.setBackgroundTheme}
+                                        promptSettings={generationProps.promptSettings}
+                                        customBackgroundFile={generationProps.customBackgroundFile}
+                                        setCustomBackgroundFile={generationProps.setCustomBackgroundFile}
+                                        handleGenerateBackground={generationProps.handleGenerateBackground}
+                                        isGeneratingBackground={generationProps.isGeneratingBackground}
+                                        selectedClothing={selectedClothing}
+                                        handleRevertBackground={generationProps.handleRevertBackground}
+                                        handleDownloadPreview={uiProps.handleDownloadPreview}
+                                        precompositePreviewUrl={precompositePreviewUrl}
+                                        handleSavePreviewToHistory={uiProps.handleSavePreviewToHistory}
+                                        handleOpenMaskEditorForEdit={uiProps.handleOpenMaskEditorForEdit}
+                                        handleAddBackImage={clothingProps.handleAddBackImage}
+                                    />
                                 </div>
-                            )}
-                            <PreviewToolbar
-                                generationType={generationProps.generationType}
-                                setGenerationType={generationProps.setGenerationType}
-                                backgroundTheme={generationProps.backgroundTheme}
-                                setBackgroundTheme={generationProps.setBackgroundTheme}
-                                promptSettings={generationProps.promptSettings}
-                                customBackgroundFile={generationProps.customBackgroundFile}
-                                setCustomBackgroundFile={generationProps.setCustomBackgroundFile}
-                                handleGenerateBackground={generationProps.handleGenerateBackground}
-                                isGeneratingBackground={generationProps.isGeneratingBackground}
-                                selectedClothing={selectedClothing}
-                                handleRevertBackground={generationProps.handleRevertBackground}
-                                handleDownloadPreview={uiProps.handleDownloadPreview}
-                                precompositePreviewUrl={precompositePreviewUrl}
-                                handleSavePreviewToHistory={uiProps.handleSavePreviewToHistory}
-                                handleOpenMaskEditorForEdit={uiProps.handleOpenMaskEditorForEdit}
-                                handleAddBackImage={clothingProps.handleAddBackImage}
-                            />
+                            </div>
+                            <div>
+                                <h3 className="text-center text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Costas</h3>
+                                <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2">
+                                    {precompositePreviewUrlBack ? <ZoomableImage src={precompositePreviewUrlBack} alt="Pré-visualização das Costas" /> : (
+                                        <div className="text-center text-gray-500">
+                                            <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
+                                            <p>Pré-visualização das Costas</p>
+                                            <span className="text-xs">(Adicione uma imagem de costas à roupa)</span>
+                                        </div>
+                                    )}
+                                    {selectedClothing?.base64Back && (
+                                        <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <button onClick={() => uiProps.handleDownloadPreview(precompositePreviewUrlBack, 'costas')} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title="Baixar Pré-visualização (Costas)">
+                                                <DownloadIcon />
+                                            </button>
+                                            <button onClick={() => uiProps.handleSavePreviewToHistory('back')} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Salvar Prévia no Histórico">
+                                                <BookmarkIcon />
+                                            </button>
+                                            <button onClick={() => uiProps.handleOpenMaskEditorForEdit(selectedClothing, true)} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-purple-600 hover:scale-110 transition-all" title="Editar Área da Estampa (Costas)">
+                                                <PositionIcon />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                         </div>
+                         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg">
+                            <HistoryTimeline history={generationHistory} onRestore={handleRestoreHistoryItem} onViewAll={() => setIsHistoryModalOpen(true)} />
                         </div>
                     </div>
-                    <div>
-                        <h3 className="text-center text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Costas</h3>
-                        <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2">
-                            {precompositePreviewUrlBack ? <ZoomableImage src={precompositePreviewUrlBack} alt="Pré-visualização das Costas" /> : (
-                                <div className="text-center text-gray-500">
-                                    <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
-                                    <p>Pré-visualização das Costas</p>
-                                    <span className="text-xs">(Adicione uma imagem de costas à roupa)</span>
-                                </div>
-                            )}
-                            {selectedClothing?.base64Back && (
-                                <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <button onClick={() => uiProps.handleDownloadPreview(precompositePreviewUrlBack, 'costas')} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title="Baixar Pré-visualização (Costas)">
-                                        <DownloadIcon />
-                                    </button>
-                                    <button onClick={() => uiProps.handleSavePreviewToHistory('back')} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Salvar Prévia no Histórico">
-                                        <BookmarkIcon />
-                                    </button>
-                                    <button onClick={() => uiProps.handleOpenMaskEditorForEdit(selectedClothing, true)} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-purple-600 hover:scale-110 transition-all" title="Editar Área da Estampa (Costas)">
-                                        <PositionIcon />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                 </div>
-                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg">
-                    <HistoryTimeline history={generationHistory} onRestore={handleRestoreHistoryItem} onViewAll={() => setIsHistoryModalOpen(true)} />
                 </div>
             </div>
 
-            <div className="xl:col-span-3 space-y-6">
-                <CreatorGenerationOptionsAndActionsSection 
-                    generationProps={generationProps}
-                    actionsProps={actionsProps}
-                    printsProps={printsProps}
-                />
+            {/* Sidebar Toggle Button */}
+            <button 
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className={`fixed top-1/2 transform -translate-y-1/2 bg-purple-600 text-white p-2 rounded-l-lg z-40 shadow-lg transition-all duration-300 ease-in-out ${isSidebarOpen ? 'right-[24rem]' : 'right-0'}`}
+                title={isSidebarOpen ? "Esconder Painel de IA" : "Mostrar Painel de IA"}
+            >
+                {isSidebarOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            </button>
+
+            {/* Sidebar Panel */}
+            <div className={`fixed top-16 right-0 h-[calc(100vh-4rem)] w-96 bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                <div className="overflow-y-auto h-full scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900">
+                    <div className="p-4 space-y-6">
+                        <CreatorGenerationOptionsAndActionsSection 
+                            generationProps={generationProps}
+                            actionsProps={actionsProps}
+                            printsProps={printsProps}
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     );
