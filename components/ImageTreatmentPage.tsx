@@ -5,7 +5,7 @@ import { SparklesIcon, UploadIcon, LoadingSpinner, PencilIcon, TrashIcon, CheckI
 import { ZoomableImage } from './ZoomableImage';
 import { ImageCompareSlider } from './ImageCompareSlider';
 import { fileToBase64, pngDataUrlToJpgDataUrl, processAndValidateImageFile, downloadDataUrlAsJpg, getImageDimensionsFromUrl } from '../utils/fileUtils';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { supabase } from '../src/integrations/supabase/client'; // Import Supabase client
 
 // --- Memoized Child Components for Lists ---
 
@@ -54,20 +54,20 @@ const AdditionalImageItem = memo(({ image, onRemove }: {
 const SavedPromptItem = memo(({ prompt, onUse, onUpdate, onDelete }: {
     prompt: SavedImagePrompt;
     onUse: (prompt: SavedImagePrompt) => void;
-    onUpdate: (id: string, newName: string) => boolean;
-    onDelete: (id: string) => void;
+    onUpdate: (id: string, newName: string) => Promise<boolean>; // Changed to Promise<boolean>
+    onDelete: (id: string) => Promise<void>; // Changed to Promise<void>
 }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editingName, setEditingName] = useState(prompt.name);
     const [error, setError] = useState<string | null>(null);
 
-    const handleSave = () => {
+    const handleSave = async () => { // Made async
         setError(null);
         if (!editingName.trim()) {
             setError("O nome não pode estar vazio.");
             return;
         }
-        const success = onUpdate(prompt.id, editingName.trim());
+        const success = await onUpdate(prompt.id, editingName.trim()); // Await the update
         if (success) {
             setIsEditing(false);
         } else {
@@ -111,7 +111,7 @@ const SavedPromptItem = memo(({ prompt, onUse, onUpdate, onDelete }: {
 const TreatmentHistoryItemCard = memo(({ item, onRestore, onDelete }: {
     item: TreatmentHistoryItem;
     onRestore: (item: TreatmentHistoryItem) => void;
-    onDelete: (id: string) => void;
+    onDelete: (id: string) => Promise<void>; // Changed to Promise<void>
 }) => (
     <div className="group flex items-center gap-3 p-2 rounded-lg bg-gray-900/50 hover:bg-gray-700 transition-colors">
         <div className="w-16 h-16 rounded-md flex-shrink-0 relative cursor-pointer" onClick={() => onRestore(item)}>
@@ -297,8 +297,8 @@ const VisualComposer = memo(({ baseImageSrc, onDraftChange }: { baseImageSrc: st
 // --- Main Page Component ---
 
 interface ImageTreatmentPageProps {
-    savedPrompts: SavedImagePrompt[];
-    setSavedPrompts: React.Dispatch<React.SetStateAction<SavedImagePrompt[]>>;
+    savedPrompts: SavedImagePrompt[]; // Now passed from App.tsx
+    setSavedPrompts: React.Dispatch<React.SetStateAction<SavedImagePrompt[]>>; // Now passed from App.tsx
 }
 
 export const ImageTreatmentPage: React.FC<ImageTreatmentPageProps> = ({
@@ -306,9 +306,9 @@ export const ImageTreatmentPage: React.FC<ImageTreatmentPageProps> = ({
     setSavedPrompts,
 }) => {
     // --- State moved from App.tsx ---
-    const [treatmentPrints, setTreatmentPrints] = useLocalStorage<Print[]>('ai-mockup-treatment-prints', []);
-    const [treatmentSelectedPrintId, setTreatmentSelectedPrintId] = useLocalStorage<string | null>('ai-mockup-treatment-selected-print-id', null);
-    const [treatmentHistory, setTreatmentHistory] = useLocalStorage<TreatmentHistoryItem[]>('ai-clothing-mockup-treatment-history', []);
+    const [treatmentPrints, setTreatmentPrints] = useState<Print[]>([]); // Now managed by Supabase
+    const [treatmentSelectedPrintId, setTreatmentSelectedPrintId] = useState<string | null>(null); // Still local state
+    const [treatmentHistory, setTreatmentHistory] = useState<TreatmentHistoryItem[]>([]); // Now managed by Supabase
     const [treatmentCurrentPrompt, setTreatmentCurrentPrompt] = useState<string>('');
     const [treatmentGeneratedImage, setTreatmentGeneratedImage] = useState<{ base64: string; mimeType: string } | null>(null);
     const [treatmentAdditionalImages, setTreatmentAdditionalImages] = useState<Print[]>([]);
@@ -325,6 +325,54 @@ export const ImageTreatmentPage: React.FC<ImageTreatmentPageProps> = ({
     const [draftDataUrl, setDraftDataUrl] = useState<string | null>(null);
 
     const selectedPrint = useMemo(() => treatmentPrints.find(p => p.id === treatmentSelectedPrintId), [treatmentPrints, treatmentSelectedPrintId]);
+
+    // Fetch initial data from Supabase
+    useEffect(() => {
+        const fetchTreatmentPrints = async () => {
+            const { data, error: dbError } = await supabase
+                .from('treatment_prints')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (dbError) {
+                console.error('Error fetching treatment prints:', dbError);
+                setError('Não foi possível carregar as imagens de tratamento.');
+            } else if (data) {
+                setTreatmentPrints(data.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    base64: item.base64,
+                    mimeType: item.mime_type,
+                    hasBgRemoved: item.has_bg_removed,
+                })));
+            }
+        };
+
+        const fetchTreatmentHistory = async () => {
+            const { data, error: dbError } = await supabase
+                .from('treatment_history')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (dbError) {
+                console.error('Error fetching treatment history:', dbError);
+                setError('Não foi possível carregar o histórico de tratamento.');
+            } else if (data) {
+                setTreatmentHistory(data.map(item => ({
+                    id: item.id,
+                    date: item.date,
+                    originalPrintId: item.original_print_id,
+                    generatedImage: { base64: item.generated_image_base64, mimeType: item.generated_image_mime_type },
+                    prompt: item.prompt,
+                    additionalImages: item.additional_images,
+                })));
+            }
+        };
+
+        fetchTreatmentPrints();
+        fetchTreatmentHistory();
+    }, []);
+
 
     useEffect(() => {
         if (treatmentSelectedPrintId && !treatmentPrints.some(p => p.id === treatmentSelectedPrintId)) {
@@ -367,42 +415,95 @@ export const ImageTreatmentPage: React.FC<ImageTreatmentPageProps> = ({
         }
 
         if (newPrints.length > 0) {
-        setTreatmentPrints(prev => [...prev, ...newPrints]);
+            // Insert into Supabase
+            const dbRecords = newPrints.map(p => ({
+                id: p.id,
+                name: p.name,
+                base64: p.base64,
+                mime_type: p.mimeType,
+                has_bg_removed: p.hasBgRemoved,
+            }));
+            const { data, error: insertError } = await supabase.from('treatment_prints').insert(dbRecords).select();
+
+            if (insertError) {
+                console.error('Error inserting treatment prints:', insertError);
+                setError('Falha ao salvar imagens de tratamento no banco de dados.');
+            } else if (data) {
+                setTreatmentPrints(prev => [...prev, ...data.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    base64: item.base64,
+                    mimeType: item.mime_type,
+                    hasBgRemoved: item.has_bg_removed,
+                }))]);
+            }
         }
         if (uploadErrors.length > 0) {
         console.error("Treatment print upload errors:", uploadErrors.join('\n'));
         }
     }, [setTreatmentPrints]);
 
-    const handleDeleteTreatmentPrint = useCallback((idToDelete: string) => {
-        setTreatmentPrints(prevPrints => {
-            const remainingPrints = prevPrints.filter(p => p.id !== idToDelete);
-            
-            if (treatmentSelectedPrintId === idToDelete) {
-                const newSelectedId = remainingPrints.length > 0 ? remainingPrints[0].id : null;
-                setTreatmentSelectedPrintId(newSelectedId);
+    const handleDeleteTreatmentPrint = useCallback(async (idToDelete: string) => {
+        if (window.confirm("Tem certeza que deseja excluir esta imagem de tratamento?")) {
+            const { error: deleteError } = await supabase
+                .from('treatment_prints')
+                .delete()
+                .eq('id', idToDelete);
+
+            if (deleteError) {
+                console.error('Error deleting treatment print:', deleteError);
+                setError('Falha ao excluir imagem de tratamento do banco de dados.');
+            } else {
+                setTreatmentPrints(prevPrints => {
+                    const remainingPrints = prevPrints.filter(p => p.id !== idToDelete);
+                    
+                    if (treatmentSelectedPrintId === idToDelete) {
+                        const newSelectedId = remainingPrints.length > 0 ? remainingPrints[0].id : null;
+                        setTreatmentSelectedPrintId(newSelectedId);
+                        setTreatmentGeneratedImage(null);
+                        setTreatmentAdditionalImages([]);
+                    }
+                    
+                    return remainingPrints;
+                });
+
+                setTreatmentAdditionalImages(prev => prev.filter(p => p.id !== idToDelete));
+            }
+        }
+    }, [treatmentSelectedPrintId, setTreatmentPrints, setTreatmentSelectedPrintId, setTreatmentGeneratedImage, setTreatmentAdditionalImages]);
+
+    const handleDeleteAllTreatmentPrints = useCallback(async () => {
+        if (window.confirm("Tem certeza de que deseja excluir TODAS as imagens de tratamento? Esta ação não pode ser desfeita.")) {
+            const { error: deleteError } = await supabase
+                .from('treatment_prints')
+                .delete()
+                .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
+
+            if (deleteError) {
+                console.error('Error deleting all treatment prints:', deleteError);
+                setError('Falha ao excluir todas as imagens de tratamento do banco de dados.');
+            } else {
+                setTreatmentPrints([]);
+                setTreatmentSelectedPrintId(null);
                 setTreatmentGeneratedImage(null);
                 setTreatmentAdditionalImages([]);
             }
-            
-            return remainingPrints;
-        });
-
-        setTreatmentAdditionalImages(prev => prev.filter(p => p.id !== idToDelete));
-    }, [treatmentSelectedPrintId, setTreatmentPrints, setTreatmentSelectedPrintId, setTreatmentGeneratedImage, setTreatmentAdditionalImages]);
-
-    const handleDeleteAllTreatmentPrints = useCallback(() => {
-        if (window.confirm("Tem certeza de que deseja excluir TODAS as imagens de tratamento? Esta ação não pode ser desfeita.")) {
-            setTreatmentPrints([]);
-            setTreatmentSelectedPrintId(null);
-            setTreatmentGeneratedImage(null);
-            setTreatmentAdditionalImages([]);
         }
     }, [setTreatmentPrints, setTreatmentSelectedPrintId, setTreatmentGeneratedImage, setTreatmentAdditionalImages]);
 
-    const handleDeleteTreatmentHistoryItem = useCallback((id: string) => {
+    const handleDeleteTreatmentHistoryItem = useCallback(async (id: string) => {
         if (window.confirm("Deseja excluir este item do histórico?")) {
-            setTreatmentHistory(prev => prev.filter(item => item.id !== id));
+            const { error: deleteError } = await supabase
+                .from('treatment_history')
+                .delete()
+                .eq('id', id);
+
+            if (deleteError) {
+                console.error('Error deleting treatment history item:', deleteError);
+                setError('Falha ao excluir item do histórico de tratamento.');
+            } else {
+                setTreatmentHistory(prev => prev.filter(item => item.id !== id));
+            }
         }
     }, [setTreatmentHistory]);
 
@@ -499,7 +600,31 @@ export const ImageTreatmentPage: React.FC<ImageTreatmentPageProps> = ({
                 prompt: treatmentCurrentPrompt,
                 additionalImages: treatmentAdditionalImages,
             };
-            setTreatmentHistory(prev => [newHistoryItem, ...prev].slice(0, 50));
+            
+            // Insert into Supabase
+            const { data, error: insertError } = await supabase.from('treatment_history').insert({
+                id: newHistoryItem.id,
+                date: newHistoryItem.date,
+                original_print_id: newHistoryItem.originalPrintId,
+                generated_image_base64: newHistoryItem.generatedImage.base64,
+                generated_image_mime_type: newHistoryItem.generatedImage.mimeType,
+                prompt: newHistoryItem.prompt,
+                additional_images: newHistoryItem.additionalImages,
+            }).select().single();
+
+            if (insertError) {
+                console.error('Error inserting treatment history:', insertError);
+                setError('Falha ao salvar histórico de tratamento no banco de dados.');
+            } else if (data) {
+                setTreatmentHistory(prev => [{
+                    id: data.id,
+                    date: data.date,
+                    originalPrintId: data.original_print_id,
+                    generatedImage: { base64: data.generated_image_base64, mimeType: data.generated_image_mime_type },
+                    prompt: data.prompt,
+                    additionalImages: data.additional_images,
+                }, ...prev].slice(0, 50));
+            }
 
         } catch (e) {
             setError(e instanceof Error ? e.message : "Ocorreu um erro desconhecido.");
@@ -508,7 +633,7 @@ export const ImageTreatmentPage: React.FC<ImageTreatmentPageProps> = ({
         }
     }, [selectedPrint, treatmentCurrentPrompt, treatmentAdditionalImages, draftDataUrl, setTreatmentGeneratedImage, setError, setTreatmentHistory]);
     
-    const handleSavePrompt = useCallback(() => {
+    const handleSavePrompt = useCallback(async () => { // Made async
         setSaveError(null);
         if (!treatmentCurrentPrompt.trim()) {
             setSaveError("O prompt não pode estar vazio.");
@@ -528,22 +653,63 @@ export const ImageTreatmentPage: React.FC<ImageTreatmentPageProps> = ({
             name: newPromptName.trim(),
             prompt: treatmentCurrentPrompt.trim(),
         };
-        setSavedPrompts(prev => [newSavedPrompt, ...prev]);
-        setNewPromptName('');
-        setIsSavingPrompt(false);
+        
+        // Insert into Supabase
+        const { data, error: insertError } = await supabase.from('saved_image_prompts').insert({
+            id: newSavedPrompt.id,
+            name: newSavedPrompt.name,
+            prompt: newSavedPrompt.prompt,
+        }).select().single();
+
+        if (insertError) {
+            console.error('Error inserting saved image prompt:', insertError);
+            setSaveError('Falha ao salvar prompt no banco de dados.');
+        } else if (data) {
+            setSavedPrompts(prev => [{
+                id: data.id,
+                name: data.name,
+                prompt: data.prompt,
+            }, ...prev]);
+            setNewPromptName('');
+            setIsSavingPrompt(false);
+        }
     }, [treatmentCurrentPrompt, newPromptName, savedPrompts, setSavedPrompts]);
 
-    const handleUpdatePrompt = useCallback((id: string, newName: string): boolean => {
+    const handleUpdatePrompt = useCallback(async (id: string, newName: string): Promise<boolean> => { // Made async
         if (savedPrompts.some(p => p.id !== id && p.name.toLowerCase() === newName.toLowerCase())) {
             return false;
         }
+        
+        // Update in Supabase
+        const { error: updateError } = await supabase
+            .from('saved_image_prompts')
+            .update({ name: newName })
+            .eq('id', id);
+
+        if (updateError) {
+            console.error('Error updating saved image prompt:', updateError);
+            setError('Falha ao atualizar nome do prompt no banco de dados.');
+            return false;
+        }
+
         setSavedPrompts(prev => prev.map(p => p.id === id ? { ...p, name: newName } : p));
         return true;
     }, [savedPrompts, setSavedPrompts]);
 
-    const handleDeletePrompt = useCallback((id: string) => {
+    const handleDeletePrompt = useCallback(async (id: string) => { // Made async
         if (window.confirm("Tem certeza que deseja deletar este prompt?")) {
-            setSavedPrompts(prev => prev.filter(p => p.id !== id));
+            // Delete from Supabase
+            const { error: deleteError } = await supabase
+                .from('saved_image_prompts')
+                .delete()
+                .eq('id', id);
+
+            if (deleteError) {
+                console.error('Error deleting saved image prompt:', deleteError);
+                setError('Falha ao excluir prompt do banco de dados.');
+            } else {
+                setSavedPrompts(prev => prev.filter(p => p.id !== id));
+            }
         }
     }, [setSavedPrompts]);
 

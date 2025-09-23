@@ -11,7 +11,7 @@ import {
     initialPosePrompts, defaultMockupPrompts, defaultPromptSettings, initialImagePrompts,
     inspirationItems
 } from './constants';
-import { supabase } from './integrations/supabase/client';
+import { supabase } from './src/integrations/supabase/client';
 
 
 // Icons
@@ -142,7 +142,7 @@ const App: React.FC = () => {
   const [savedMasks, setSavedMasks] = useLocalStorage<SavedMask[]>('ai-clothing-mockup-saved-masks', []);
   const [clothingCategories, setClothingCategories] = useLocalStorage<string[]>('ai-clothing-mockup-categories', initialClothingCategories);
   const [customColors, setCustomColors] = useLocalStorage<string[]>('ai-clothing-mockup-custom-colors', []);
-  const [savedImagePrompts, setSavedImagePrompts] = useLocalStorage<SavedImagePrompt[]>('ai-clothing-mockup-image-prompts', initialImagePrompts);
+  const [savedImagePrompts, setSavedImagePrompts] = useState<SavedImagePrompt[]>([]); // Now managed by Supabase
   const [promptSettings, setPromptSettings] = useLocalStorage<PromptSettings>('ai-clothing-mockup-prompt-settings', defaultPromptSettings);
 
 
@@ -262,7 +262,26 @@ const App: React.FC = () => {
         }
     };
 
+    const fetchSavedImagePrompts = async () => {
+        const { data, error: dbError } = await supabase
+            .from('saved_image_prompts')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (dbError) {
+            console.error('Error fetching saved image prompts:', dbError);
+            setError('Não foi possível carregar os prompts de imagem salvos do banco de dados.');
+        } else if (data) {
+            setSavedImagePrompts(data.map(item => ({
+                id: item.id,
+                name: item.name,
+                prompt: item.prompt,
+            })));
+        }
+    };
+
     fetchClothes();
+    fetchSavedImagePrompts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1382,26 +1401,45 @@ const handleCancelBatchGeneration = () => {
                 cleanSavedPrints.push({ ...rest, imagePath: `images/${fileName}` });
             }
 
-            const treatmentPrintsData = JSON.parse(localStorage.getItem('ai-mockup-treatment-prints') || '[]');
+            // Fetch treatment prints from Supabase
+            const { data: treatmentPrintsData, error: tpError } = await supabase.from('treatment_prints').select('*');
+            if (tpError) throw tpError;
             const cleanTreatmentPrints = [];
             for (const print of treatmentPrintsData) {
-                const { base64, ...rest } = print;
-                const fileName = `treatment_print_${print.id}.${print.mimeType.split('/')[1] || 'png'}`;
-                imagesFolder.file(fileName, base64, { base64: true });
-                cleanTreatmentPrints.push({ ...rest, imagePath: `images/${fileName}` });
+                const fileName = `treatment_print_${print.id}.${print.mime_type.split('/')[1] || 'png'}`;
+                imagesFolder.file(fileName, print.base64, { base64: true });
+                cleanTreatmentPrints.push({ ...print, imagePath: `images/${fileName}` });
             }
+
+            // Fetch treatment history from Supabase
+            const { data: treatmentHistoryData, error: thError } = await supabase.from('treatment_history').select('*');
+            if (thError) throw thError;
+            const cleanTreatmentHistory = treatmentHistoryData.map(item => ({
+                ...item,
+                generatedImage: { base64: item.generated_image_base64, mimeType: item.generated_image_mime_type },
+                additionalImages: item.additional_images,
+            }));
+
+            // Fetch saved image prompts from Supabase
+            const { data: savedImagePromptsData, error: sipError } = await supabase.from('saved_image_prompts').select('*');
+            if (sipError) throw sipError;
+            const cleanSavedImagePrompts = savedImagePromptsData.map(item => ({
+                id: item.id,
+                name: item.name,
+                prompt: item.prompt,
+            }));
     
             const backupData = {
                 savedClothes: cleanSavedClothes,
                 savedPrints: cleanSavedPrints,
                 treatmentPrints: cleanTreatmentPrints,
-                treatmentHistory: JSON.parse(localStorage.getItem('ai-clothing-mockup-treatment-history') || '[]'),
+                treatmentHistory: cleanTreatmentHistory,
                 generationHistory,
                 clothingCategories,
                 promptSettings,
                 customColors,
                 savedMasks,
-                savedImagePrompts,
+                savedImagePrompts: cleanSavedImagePrompts, // Use fetched prompts
                 dataType: 'mockup-creator-backup',
                 version: '2.4-colocated'
             };
@@ -1458,6 +1496,8 @@ const handleCancelBatchGeneration = () => {
             const clothesData = data.savedClothes || [];
             const printsData = data.savedPrints || [];
             const treatmentPrintsData = data.treatmentPrints || [];
+            const treatmentHistoryData = data.treatmentHistory || [];
+            const savedImagePromptsData = data.savedImagePrompts || [];
 
             const totalImages = (clothesData.length * 3) + printsData.length + treatmentPrintsData.length;
             let processedImages = 0;
@@ -1503,6 +1543,18 @@ const handleCancelBatchGeneration = () => {
                 return { ...rest, base64: await readImageFromZip(imagePath) };
             }));
 
+            const rehydratedTreatmentHistory = treatmentHistoryData.map((item: any) => ({
+                ...item,
+                generatedImage: { base64: item.generated_image_base64, mimeType: item.generated_image_mime_type },
+                additionalImages: item.additional_images,
+            }));
+
+            const rehydratedSavedImagePrompts = savedImagePromptsData.map((item: any) => ({
+                id: item.id,
+                name: item.name,
+                prompt: item.prompt,
+            }));
+
             const keysToClear = [
                 'ai-clothing-mockup-saved-clothes', 'ai-clothing-mockup-history', 'ai-clothing-mockup-saved-prints',
                 'ai-mockup-treatment-prints', 'ai-clothing-mockup-selected-print-id', 'ai-clothing-mockup-selected-print-id-back',
@@ -1511,10 +1563,14 @@ const handleCancelBatchGeneration = () => {
             ];
             keysToClear.forEach(key => localStorage.removeItem(key));
             
-            // Clear existing clothes in DB before importing
+            // Clear existing data in DB before importing
             await supabase.from('clothes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+            await supabase.from('treatment_prints').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+            await supabase.from('treatment_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+            await supabase.from('saved_image_prompts').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
-            const dbRecords = rehydratedClothes.map((c: any) => ({
+
+            const dbClothesRecords = rehydratedClothes.map((c: any) => ({
                 id: c.id,
                 name: c.name,
                 category: c.category,
@@ -1534,18 +1590,41 @@ const handleCancelBatchGeneration = () => {
                 print_combinations: c.printCombinations,
                 is_minimized_in_associations: c.isMinimizedInAssociations,
             }));
+            await supabase.from('clothes').insert(dbClothesRecords);
 
-            await supabase.from('clothes').insert(dbRecords);
+            const dbTreatmentPrintsRecords = rehydratedTreatmentPrints.map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                base64: p.base64,
+                mime_type: p.mimeType,
+                has_bg_removed: p.hasBgRemoved,
+            }));
+            await supabase.from('treatment_prints').insert(dbTreatmentPrintsRecords);
+
+            const dbTreatmentHistoryRecords = rehydratedTreatmentHistory.map((item: any) => ({
+                id: item.id,
+                date: item.date,
+                original_print_id: item.originalPrintId,
+                generated_image_base64: item.generatedImage.base64,
+                generated_image_mime_type: item.generatedImage.mimeType,
+                prompt: item.prompt,
+                additional_images: item.additionalImages,
+            }));
+            await supabase.from('treatment_history').insert(dbTreatmentHistoryRecords);
+
+            const dbSavedImagePromptsRecords = rehydratedSavedImagePrompts.map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                prompt: p.prompt,
+            }));
+            await supabase.from('saved_image_prompts').insert(dbSavedImagePromptsRecords);
             
             localStorage.setItem('ai-clothing-mockup-saved-prints', JSON.stringify(rehydratedPrints));
-            localStorage.setItem('ai-mockup-treatment-prints', JSON.stringify(rehydratedTreatmentPrints));
-            localStorage.setItem('ai-clothing-mockup-treatment-history', JSON.stringify(data.treatmentHistory || []));
             localStorage.setItem('ai-clothing-mockup-history', JSON.stringify(data.generationHistory || []));
             localStorage.setItem('ai-clothing-mockup-categories', JSON.stringify(data.clothingCategories || initialClothingCategories));
             localStorage.setItem('ai-clothing-mockup-prompt-settings', JSON.stringify(data.promptSettings || defaultPromptSettings));
             localStorage.setItem('ai-clothing-mockup-custom-colors', JSON.stringify(data.customColors || []));
             localStorage.setItem('ai-clothing-mockup-saved-masks', JSON.stringify(data.savedMasks || []));
-            localStorage.setItem('ai-clothing-mockup-image-prompts', JSON.stringify(data.savedImagePrompts || initialImagePrompts));
             
             setImportStatus({ message: "Importação concluída com sucesso! Recarregando...", error: false, progress: 100 });
             await new Promise(resolve => setTimeout(resolve, 1500));
