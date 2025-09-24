@@ -1147,7 +1147,7 @@ const handleGenerateAssociationsMockupsBatch = useCallback(async () => {
                 if (!precompositeBack) throw new Error("Falha ao criar pré-composição das costas.");
                 
                 const backResultB64 = await generateMockup(promptSettings.mockup, precompositeBack.base64, precompositeBack.mimeType, undefined, selectedColor, backgroundThemeDescription, frontResultB64, frontResultB64 ? 'image/png' : undefined, customBgData, !frontResultB64, true);
-                finalImageUrls.push(`data:image/png;base64,${backResultB64}`);
+                finalImageUrls.push(`data:image/png;base664,${backResultB64}`);
             }
 
             if (finalImageUrls.length > 0) {
@@ -1657,8 +1657,8 @@ const handleCancelBatchGeneration = () => {
                 width: item.width,
                 height: item.height,
                 rotation: item.rotation,
-                skewX: item.skewX,
-                skewY: item.skewY,
+                skewX: item.skew_x,
+                skewY: item.skew_y,
             }));
 
             const keysToClear = [
@@ -1899,7 +1899,7 @@ const handleCancelBatchGeneration = () => {
             isBatchingPreviews,
             error,
             handleGenerate,
-            handleGenerateAssociationsBatch: handleGeneratePreviewsBatch,
+            handleGenerateAssociationsBatch,
             canGenerate,
             handleDownloadPreviewsAsZip,
             isZippingPreview,
@@ -1974,7 +1974,7 @@ const handleCancelBatchGeneration = () => {
     };
 
     return (
-        <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans">
+        <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans flex flex-col"> {/* Added flex flex-col */}
             <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-40 shadow-md">
                 <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
@@ -1999,7 +1999,7 @@ const handleCancelBatchGeneration = () => {
                 </nav>
             </header>
 
-            <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+            <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow"> {/* Added flex-grow */}
                 {renderPage()}
             </main>
 
@@ -2029,7 +2029,7 @@ const handleCancelBatchGeneration = () => {
                     initialMask={clothingToEdit ? (clothingToEdit.isBack ? clothingToEdit.clothing.maskBack : clothingToEdit.clothing.mask) : null}
                     saveButtonText={clothingToEdit ? "Salvar Edição" : undefined}
                     savedMasks={savedMasks}
-                    onSaveCurrentMask={handleSaveMask}
+                    onSaveCurrentMask={handleSaveCurrentMask}
                     onDeleteSavedMask={handleDeleteSavedMask}
                     onUpdateSavedMask={handleUpdateSavedMask}
                 />

@@ -48,7 +48,7 @@ interface CreatorGenerationOptionsAndActionsSectionProps {
     printsProps: {
         selectedPrintFront: Print | undefined;
     };
-    activeSettingTab: 'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background' | 'generateActions';
+    activeSettingTab: 'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'; // Removed 'generateActions'
 }
 
 export const CreatorGenerationOptionsAndActionsSection: React.FC<CreatorGenerationOptionsAndActionsSectionProps> = ({
@@ -66,11 +66,6 @@ export const CreatorGenerationOptionsAndActionsSection: React.FC<CreatorGenerati
         selectedClothing, handleSuggestColors, isSuggestingColors, suggestedPalettes,
     } = generationProps;
     
-    const {
-        isLoading, isBatchingPreviews, error, handleGenerate,
-        handleGenerateAssociationsBatch, canGenerate
-    } = actionsProps;
-
     const { selectedPrintFront } = printsProps;
 
     const renderSettingContent = () => {
@@ -171,15 +166,9 @@ export const CreatorGenerationOptionsAndActionsSection: React.FC<CreatorGenerati
             case 'color':
                 return (
                     <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                            <label className="text-md font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                <PaletteIcon /> Cor da Roupa
-                            </label>
-                            <button onClick={handleSuggestColors} disabled={!selectedPrintFront || isSuggestingColors} className="text-xs flex items-center gap-1.5 bg-purple-600/50 text-white px-3 py-1.5 rounded-md hover:bg-purple-600/80 disabled:bg-gray-600 disabled:cursor-not-allowed">
-                                {isSuggestingColors ? <LoadingSpinner className="h-4 w-4" /> : <MagicWandIcon className="h-4 w-4" />}
-                                Sugerir Cores com IA
-                            </button>
-                        </div>
+                        <label className="text-md font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                            <PaletteIcon /> Cor da Roupa
+                        </label>
                         <ColorPicker
                             selectedColor={selectedColor}
                             onColorChange={setSelectedColor}
@@ -188,6 +177,10 @@ export const CreatorGenerationOptionsAndActionsSection: React.FC<CreatorGenerati
                             customColors={customColors}
                             suggestedPalettes={suggestedPalettes}
                         />
+                        <button onClick={handleSuggestColors} disabled={!selectedPrintFront || isSuggestingColors} className="w-full text-sm flex items-center justify-center gap-1.5 bg-purple-600/50 text-white px-3 py-1.5 rounded-md hover:bg-purple-600/80 disabled:bg-gray-600 disabled:cursor-not-allowed">
+                            {isSuggestingColors ? <LoadingSpinner className="h-4 w-4" /> : <MagicWandIcon className="h-4 w-4" />}
+                            Sugerir Cores com IA
+                        </button>
                     </div>
                 );
             case 'blendMode':
