@@ -1,7 +1,3 @@
-
-
-
-
 export interface Mask {
   x: number;
   y: number;
@@ -78,6 +74,21 @@ export interface TreatmentHistoryItem {
   prompt: string;
   additionalImages: Print[];
 }
+
+// --- New type definitions for CreatorPage ---
+export interface ImageDimensions {
+  width: number;
+  height: number;
+}
+
+export interface ImageRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+// --- End new type definitions ---
+
 
 // --- Robust Type Definitions ---
 export type GenerationType = 'standard' | 'poses-3' | 'models';

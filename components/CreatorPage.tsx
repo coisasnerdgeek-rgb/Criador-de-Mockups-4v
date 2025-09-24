@@ -6,7 +6,8 @@ import { ImageCompareSlider } from './ImageCompareSlider';
 import { ColorPicker } from './ColorPicker';
 import { 
     SavedClothing, Print, Mask, HistoryItem, GenerationType, GenerationMode, Pose, ModelFilter, 
-    PromptSettings, NewClothingFileState, ActiveNewClothingInputTab, NewClothingForm, ColorPalette
+    PromptSettings, NewClothingFileState, ActiveNewClothingInputTab, NewClothingForm, ColorPalette,
+    ImageDimensions, ImageRect // Import new types
 } from '../types';
 import { 
     LoadingSpinner, TrashIcon, PencilIcon, MagicWandIcon, DownloadIcon, ImageIcon, HistoryIcon, 
@@ -46,140 +47,16 @@ interface PreviewToolbarProps {
     handleSavePreviewToHistory: (side: 'front' | 'back') => void;
     handleOpenMaskEditorForEdit: (clothing: SavedClothing, isBack: boolean) => void;
     handleAddBackImage: (clothing: SavedClothing) => void;
+    isBackPreview: boolean; // New prop to differentiate front/back toolbar
 }
-
-export interface CreatorPageClothingProps {
-    savedClothes: SavedClothing[];
-    selectedClothing: SavedClothing | null;
-    setSelectedClothing: React.Dispatch<React.SetStateAction<SavedClothing | null>>;
-    activeCategory: string;
-    setActiveCategory: React.Dispatch<React.SetStateAction<string>>;
-    clothingCategories: string[];
-    filteredClothes: SavedClothing[];
-    newClothingForm: NewClothingForm;
-    setNewClothingForm: React.Dispatch<React.SetStateAction<NewClothingForm>>;
-    newClothingFileState: NewClothingFileState;
-    handleNewClothingFileChange: (file: File, isBack: boolean) => Promise<void>;
-    handleClearNewClothingFile: (isBack: boolean) => void;
-    handleLoadFromUrl: (url: string, isBack: boolean) => Promise<void>;
-    activeNewClothingTab: 'saved' | 'new';
-    setActiveNewClothingTab: React.Dispatch<React.SetStateAction<'saved' | 'new'>>;
-    activeNewClothingInputTab: ActiveNewClothingInputTab;
-    setActiveNewClothingInputTab: React.Dispatch<React.SetStateAction<ActiveNewClothingInputTab>>;
-    editingClothingName: SavedClothing | null;
-    setEditingClothingName: React.Dispatch<React.SetStateAction<SavedClothing | null>>;
-    handleDeleteClothing: (id: string) => void;
-    handleAddBackImage: (clothing: SavedClothing) => void;
-    handleOpenMaskEditorForNew: (isBack: boolean) => Promise<void>;
-    handleOpenMaskEditorForEdit: (clothing: SavedClothing, isBack: boolean) => void;
-    setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
-}
-
-export interface CreatorPagePrintsProps {
-    savedPrints: Print[];
-    printsToShow: Print[];
-    selectedPrintId: string | null;
-    setSelectedPrintId: React.Dispatch<React.SetStateAction<string | null>>;
-    selectedPrintIdBack: string | null;
-    setSelectedPrintIdBack: React.Dispatch<React.SetStateAction<string | null>>;
-    printUploadError: string | null;
-    handlePrintFilesChange: (files: FileList) => Promise<void>;
-    handleDeletePrint: (id: string) => void;
-    handleRemovePrintBg: (id: string) => Promise<void>;
-    isRemovingBackground: boolean;
-    selectedClothing: SavedClothing | null;
-    setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
-    selectedPrintFront: Print | undefined;
-}
-
-export interface CreatorPageGenerationProps {
-    generationType: GenerationType;
-    setGenerationType: React.Dispatch<React.SetStateAction<GenerationType>>;
-    generationAspectRatio: string;
-    setGenerationAspectRatio: React.Dispatch<React.SetStateAction<string>>;
-    generationMode: GenerationMode;
-    setGenerationMode: React.Dispatch<React.SetStateAction<GenerationMode>>;
-    selectedColor: string | null;
-    setSelectedColor: React.Dispatch<React.SetStateAction<string | null>>;
-    customColors: string[];
-    handleAddCustomColor: (color: string) => void;
-    blendMode: string;
-    setBlendMode: React.Dispatch<React.SetStateAction<string>>;
-    backgroundTheme: string;
-    setBackgroundTheme: React.Dispatch<React.SetStateAction<string>>;
-    customBackgroundFile: File | null;
-    setCustomBackgroundFile: React.Dispatch<React.SetStateAction<File | null>>;
-    selectedPoses: Pose[];
-    handlePoseSelection: (pose: Pose) => void;
-    modelFilter: ModelFilter;
-    setModelFilter: React.Dispatch<React.SetStateAction<ModelFilter>>;
-    promptSettings: PromptSettings;
-    customBgState: { isLoading: boolean; error: string | null; };
-    handleCustomBackgroundFileChange: (file: File) => Promise<void>;
-    selectedClothing: SavedClothing | null;
-    handleGenerateBackground: () => Promise<void>;
-    isGeneratingBackground: boolean;
-    handleRevertBackground: () => void;
-    handleSuggestColors: () => Promise<void>;
-    isSuggestingColors: boolean;
-    suggestedPalettes: ColorPalette[] | null;
-}
-
-export interface CreatorPageActionsProps {
-    isLoading: boolean;
-    isBatchingPreviews: boolean;
-    error: string | null;
-    handleGenerate: () => Promise<void>;
-    handleGenerateAssociationsBatch: () => Promise<void>;
-    canGenerate: boolean;
-    handleDownloadPreviewsAsZip: () => Promise<void>;
-    isZippingPreview: boolean;
-}
-
-export interface CreatorPageUIProps {
-    precompositePreviewUrl: string | null;
-    precompositePreviewUrlBack: string | null;
-    precompositePreviewUrlBefore: string | null;
-    setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
-    handleOpenMaskEditorForEdit: (clothing: SavedClothing, isBack: boolean) => void;
-    handleDownloadPreview: (url: string | null, side: 'frente' | 'costas') => void;
-    handleSavePreviewToHistory: (side: 'front' | 'back') => void;
-}
-
-
-export interface CreatorPageProps {
-    clothingProps: CreatorPageClothingProps;
-    printsProps: CreatorPagePrintsProps;
-    generationProps: CreatorPageGenerationProps;
-    actionsProps: CreatorPageActionsProps;
-    uiProps: CreatorPageUIProps;
-    generationHistory: HistoryItem[];
-    handleRestoreHistoryItem: (item: HistoryItem) => void;
-    setIsHistoryModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    generatedImageUrls: string[];
-    setGeneratedImageUrls: React.Dispatch<React.SetStateAction<string[]>>;
-}
-
-interface ImageRect {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-}
-interface ImageDimensions {
-    width: number;
-    height: number;
-}
-const blendModes = ['Normal', 'Multiply', 'Screen', 'Overlay'];
-
-// --- Components ---
 
 const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
     generationType, setGenerationType, backgroundTheme, setBackgroundTheme,
     promptSettings, customBackgroundFile, setCustomBackgroundFile,
     handleGenerateBackground, isGeneratingBackground, selectedClothing,
     handleRevertBackground, handleDownloadPreview, precompositePreviewUrl,
-    handleSavePreviewToHistory, handleOpenMaskEditorForEdit, handleAddBackImage
+    handleSavePreviewToHistory, handleOpenMaskEditorForEdit, handleAddBackImage,
+    isBackPreview
 }) => (
     <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <div className="bg-white/70 dark:bg-gray-900/70 p-2 rounded-lg shadow-lg flex flex-col gap-2" onClick={e => e.stopPropagation()}>
@@ -231,23 +108,23 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
         </div>
         {selectedClothing?.originalBase64 && (
             <button onClick={(e) => { e.stopPropagation(); handleRevertBackground(); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Reverter para Original">
-                <RevertIcon />
+                <RevertIcon /><span className="ml-1 text-xs">Reverter</span>
             </button>
         )}
-        <button onClick={(e) => { e.stopPropagation(); handleDownloadPreview(precompositePreviewUrl, 'frente'); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title="Baixar Pré-visualização (Frente)">
-            <DownloadIcon />
+        <button onClick={(e) => { e.stopPropagation(); handleDownloadPreview(precompositePreviewUrl, isBackPreview ? 'costas' : 'frente'); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title={`Baixar Pré-visualização (${isBackPreview ? 'Costas' : 'Frente'})`}>
+            <DownloadIcon /><span className="ml-1 text-xs">Baixar</span>
         </button>
-        <button onClick={(e) => { e.stopPropagation(); handleSavePreviewToHistory('front'); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Salvar Prévia no Histórico">
-            <BookmarkIcon />
+        <button onClick={(e) => { e.stopPropagation(); handleSavePreviewToHistory(isBackPreview ? 'back' : 'front'); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Salvar Prévia no Histórico">
+            <BookmarkIcon /><span className="ml-1 text-xs">Salvar</span>
         </button>
         {selectedClothing && (
-            <button onClick={(e) => { e.stopPropagation(); handleOpenMaskEditorForEdit(selectedClothing, false); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-purple-600 hover:scale-110 transition-all" title="Editar Área da Estampa (Frente)">
-            <PositionIcon />
+            <button onClick={(e) => { e.stopPropagation(); handleOpenMaskEditorForEdit(selectedClothing, isBackPreview); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-purple-600 hover:scale-110 transition-all" title={`Editar Área da Estampa (${isBackPreview ? 'Costas' : 'Frente'})`}>
+            <PositionIcon /><span className="ml-1 text-xs">Editar Máscara</span>
             </button>
         )}
-        {selectedClothing && !selectedClothing.base64Back && (
+        {selectedClothing && !selectedClothing.base64Back && !isBackPreview && (
             <button onClick={(e) => { e.stopPropagation(); handleAddBackImage(selectedClothing); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title="Adicionar Costas">
-                <PlusCircleIcon />
+                <PlusCircleIcon /><span className="ml-1 text-xs">Add Costas</span>
             </button>
         )}
     </div>
@@ -316,79 +193,119 @@ const MaskOverlay: React.FC<{ mask: Mask | null; imageRect: ImageRect | null }> 
     return <div style={maskStyle} aria-hidden="true" />;
 };
 
-const ClothingItemCard = memo<{
-    clothing: SavedClothing;
-    isSelected: boolean;
-    onSelect: (clothing: SavedClothing) => void;
-    onDelete: (id: string) => void;
-    onRename: (clothing: SavedClothing) => void;
-    onEnlarge: (url: string) => void;
-    onEditMask: (clothing: SavedClothing, isBack: boolean) => void;
-    onAddBack: (clothing: SavedClothing) => void;
-}>(({ clothing, isSelected, onSelect, onDelete, onRename, onEnlarge, onEditMask, onAddBack }) => {
-    return (
-        <div onClick={() => onSelect(clothing)} className={`relative group rounded-md cursor-pointer aspect-square overflow-hidden ring-2 transition-all ${isSelected ? 'ring-cyan-400' : 'ring-transparent hover:ring-cyan-500'}`}>
-            <img src={`data:${clothing.mimeType};base64,${clothing.base64}`} alt={clothing.name} className="w-full h-full object-cover" />
-            <div className="absolute bottom-0 left-0 w-full bg-black/60 p-1 text-center text-xs text-white truncate">{clothing.name}</div>
-            <button
-                onClick={(e) => { e.stopPropagation(); onDelete(clothing.id); }}
-                className="absolute top-1.5 left-1.5 bg-red-600/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-500 transition-all hover:scale-110"
-                title="Deletar Roupa"
-            >
-                <TrashIcon className="h-5 w-5" />
-            </button>
-            <div className="absolute top-1.5 right-1.5 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={(e) => { e.stopPropagation(); onRename(clothing); }} className="bg-green-600/80 text-white p-2 rounded-full hover:bg-green-500 transition-all hover:scale-110" title="Renomear Roupa"><PencilIcon className="h-5 w-5" /></button>
-                <button onClick={(e) => { e.stopPropagation(); onEnlarge(`data:${clothing.mimeType};base64,${clothing.base64}`); }} className="bg-blue-600/80 text-white p-2 rounded-full hover:bg-blue-500 transition-all hover:scale-110" title="Ampliar Imagem"><ZoomInIcon className="h-5 w-5" /></button>
-                <button onClick={(e) => { e.stopPropagation(); onEditMask(clothing, false); }} className="bg-purple-600/80 text-white p-2 rounded-full hover:bg-purple-500 transition-all hover:scale-110" title="Editar Área da Estampa (Frente)"><PositionIcon className="h-5 w-5" /></button>
-                {clothing.base64Back ?
-                    <button onClick={(e) => { e.stopPropagation(); onEditMask(clothing, true); }} className="bg-purple-600/80 text-white p-2 rounded-full hover:bg-purple-500 transition-all hover:scale-110" title="Editar Área da Estampa (Costas)"><PositionIcon className="h-5 w-5" /></button>
-                    : <button onClick={(e) => { e.stopPropagation(); onAddBack(clothing); }} className="bg-cyan-600/80 text-white p-2 rounded-full hover:bg-cyan-500 transition-all hover:scale-110" title="Adicionar Costas"><PlusCircleIcon className="h-5 w-5" /></button>
-                }
-            </div>
-        </div>
-    );
-});
+// --- Prop Interfaces for CreatorPage sections ---
+export interface CreatorPageClothingProps {
+    savedClothes: SavedClothing[];
+    selectedClothing: SavedClothing | null;
+    setSelectedClothing: React.Dispatch<React.SetStateAction<SavedClothing | null>>;
+    activeCategory: string;
+    setActiveCategory: React.Dispatch<React.SetStateAction<string>>;
+    clothingCategories: string[];
+    filteredClothes: SavedClothing[];
+    newClothingForm: NewClothingForm;
+    setNewClothingForm: React.Dispatch<React.SetStateAction<NewClothingForm>>;
+    newClothingFileState: NewClothingFileState;
+    handleNewClothingFileChange: (file: File, isBack: boolean) => Promise<void>;
+    handleClearNewClothingFile: (isBack: boolean) => void;
+    handleLoadFromUrl: (url: string, isBack: boolean) => Promise<void>;
+    activeNewClothingTab: 'saved' | 'new';
+    setActiveNewClothingTab: React.Dispatch<React.SetStateAction<'saved' | 'new'>>;
+    activeNewClothingInputTab: ActiveNewClothingInputTab;
+    setActiveNewClothingInputTab: React.Dispatch<React.SetStateAction<ActiveNewClothingInputTab>>;
+    editingClothingName: SavedClothing | null;
+    setEditingClothingName: React.Dispatch<React.SetStateAction<SavedClothing | null>>;
+    handleDeleteClothing: (id: string) => void;
+    handleAddBackImage: (clothing: SavedClothing) => void;
+    handleOpenMaskEditorForNew: (isBack: boolean) => Promise<void>;
+    handleOpenMaskEditorForEdit: (clothing: SavedClothing, isBack: boolean) => void;
+    setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
+}
 
-const PrintItemCard = memo<{
-    print: Print;
-    isSelectedFront: boolean;
-    isSelectedBack: boolean;
-    onSelectFront: (id: string | null) => void;
-    onSelectBack: (id: string | null) => void;
-    onRemoveBg: (id: string) => void;
+export interface CreatorPagePrintsProps {
+    savedPrints: Print[];
+    printsToShow: Print[];
+    selectedPrintId: string | null;
+    setSelectedPrintId: React.Dispatch<React.SetStateAction<string | null>>;
+    selectedPrintIdBack: string | null;
+    setSelectedPrintIdBack: React.Dispatch<React.SetStateAction<string | null>>;
+    printUploadError: string | null;
+    handlePrintFilesChange: (files: FileList) => Promise<void>;
+    handleDeletePrint: (id: string) => void;
+    handleRemovePrintBg: (printId: string) => Promise<void>;
     isRemovingBackground: boolean;
-    canSelectBack: boolean;
-    onEnlarge: (url: string) => void;
-    onDelete: (id: string) => void;
-}>(({ print, isSelectedFront, isSelectedBack, onSelectFront, onSelectBack, onRemoveBg, isRemovingBackground, canSelectBack, onEnlarge, onDelete }) => {
-    return (
-        <div className={`relative group rounded-md cursor-pointer aspect-square overflow-hidden ring-2 transition-all ${isSelectedFront || isSelectedBack ? 'ring-cyan-400' : 'ring-transparent hover:ring-cyan-500'}`}>
-            <div className="w-full h-full bg-gray-100 dark:bg-gray-900/50 flex items-center justify-center p-1">
-                <img src={`data:${print.mimeType};base64,${print.base64}`} alt={print.name} className="max-w-full max-h-full object-contain" />
-            </div>
-            {(isSelectedFront || isSelectedBack) && (
-                <div className="absolute top-1 right-1 bg-black/60 text-white font-bold px-2.5 py-1 rounded-full flex items-center gap-2 pointer-events-none shadow-lg">
-                    {isSelectedFront && <span className="text-cyan-300 font-extrabold text-lg">F</span>}
-                    {isSelectedBack && <span className="text-violet-300 font-extrabold text-lg">C</span>}
-                </div>
-            )}
-            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-1 gap-1">
-                <div className="flex flex-col gap-1 w-full">
-                    <button onClick={() => onSelectFront(isSelectedFront ? null : print.id)} className={`w-full text-xs text-white py-1 rounded ${isSelectedFront ? 'bg-cyan-700' : 'bg-cyan-600 hover:bg-cyan-500'}`}>{isSelectedFront ? 'Remover Frente' : 'Add Frente'}</button>
-                    <button onClick={() => onSelectBack(isSelectedBack ? null : print.id)} disabled={!canSelectBack} className={`w-full text-xs text-white py-1 rounded ${isSelectedBack ? 'bg-violet-700' : 'bg-violet-600 hover:bg-violet-500'} disabled:bg-gray-500 dark:disabled:bg-gray-600`}>{isSelectedBack ? 'Remover Costas' : 'Add Costas'}</button>
-                </div>
-                <button onClick={() => onRemoveBg(print.id)} disabled={isRemovingBackground || print.hasBgRemoved} className="w-full mt-1 text-xs bg-gray-600 text-white py-1 rounded hover:bg-gray-500 disabled:bg-gray-500/50 flex items-center justify-center">
-                    {isRemovingBackground ? <LoadingSpinner /> : <NoBackgroundIcon className="inline h-4 w-4 mr-1" />} {print.hasBgRemoved ? 'Fundo Removido' : 'Remover Fundo'}
-                </button>
-                <div className="absolute top-1.5 right-1.5 flex flex-col gap-1.5">
-                    <button onClick={() => onEnlarge(`data:${print.mimeType};base64,${print.base64}`)} className="bg-blue-600 text-white p-2 rounded-full transition-all hover:scale-110" title="Ampliar"><ZoomInIcon className="h-5 w-5" /></button>
-                    <button onClick={() => onDelete(print.id)} className="bg-red-600 text-white p-2 rounded-full transition-all hover:scale-110" title="Deletar"><TrashIcon className="h-5 w-5" /></button>
-                </div>
-            </div>
-        </div>
-    );
-});
+    selectedClothing: SavedClothing | null;
+    setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
+    selectedPrintFront: Print | undefined;
+}
+
+export interface CreatorPageGenerationProps {
+    generationType: GenerationType;
+    setGenerationType: React.Dispatch<React.SetStateAction<GenerationType>>;
+    generationAspectRatio: string;
+    setGenerationAspectRatio: React.Dispatch<React.SetStateAction<string>>;
+    generationMode: GenerationMode;
+    setGenerationMode: React.Dispatch<React.SetStateAction<GenerationMode>>;
+    selectedColor: string | null;
+    setSelectedColor: React.Dispatch<React.SetStateAction<string | null>>;
+    customColors: string[];
+    handleAddCustomColor: (color: string) => void;
+    blendMode: string;
+    setBlendMode: React.Dispatch<React.SetStateAction<string>>;
+    backgroundTheme: string;
+    setBackgroundTheme: React.Dispatch<React.SetStateAction<string>>;
+    customBackgroundFile: File | null;
+    setCustomBackgroundFile: React.Dispatch<React.SetStateAction<File | null>>;
+    selectedPoses: Pose[];
+    handlePoseSelection: (pose: Pose) => void;
+    modelFilter: ModelFilter;
+    setModelFilter: React.Dispatch<React.SetStateAction<ModelFilter>>;
+    promptSettings: PromptSettings;
+    customBgState: { isLoading: boolean; error: string | null; };
+    handleCustomBackgroundFileChange: (file: File) => Promise<void>;
+    selectedClothing: SavedClothing | null;
+    handleGenerateBackground: () => Promise<void>;
+    isGeneratingBackground: boolean;
+    handleRevertBackground: () => void;
+    handleSuggestColors: () => Promise<void>;
+    isSuggestingColors: boolean;
+    suggestedPalettes: ColorPalette[] | null;
+}
+
+export interface CreatorPageActionsProps {
+    isLoading: boolean;
+    isBatchingPreviews: boolean;
+    error: string | null;
+    handleGenerate: () => Promise<void>;
+    handleGenerateAssociationsBatch: () => Promise<void>;
+    canGenerate: boolean;
+    handleDownloadPreviewsAsZip: () => Promise<void>;
+    isZippingPreview: boolean;
+}
+
+export interface CreatorPageUIProps {
+    precompositePreviewUrl: string | null;
+    precompositePreviewUrlBack: string | null;
+    precompositePreviewUrlBefore: string | null;
+    setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
+    handleOpenMaskEditorForEdit: (clothing: SavedClothing, isBack: boolean) => void;
+    handleDownloadPreview: (url: string | null, side: 'frente' | 'costas') => void;
+    handleSavePreviewToHistory: (side: 'front' | 'back') => void;
+}
+
+export interface CreatorPageProps {
+    clothingProps: CreatorPageClothingProps;
+    printsProps: CreatorPagePrintsProps;
+    generationProps: CreatorPageGenerationProps;
+    actionsProps: CreatorPageActionsProps;
+    uiProps: CreatorPageUIProps;
+    generationHistory: HistoryItem[];
+    handleRestoreHistoryItem: (item: HistoryItem) => void;
+    setIsHistoryModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    generatedImageUrls: string[];
+    setGeneratedImageUrls: React.Dispatch<React.SetStateAction<string[]>>;
+}
+// --- End Prop Interfaces ---
+
 
 const CreatorClothingSection = memo((props: CreatorPageClothingProps) => {
     const {
@@ -581,7 +498,7 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
         <div className="relative flex flex-col h-full"> {/* Added flex flex-col h-full */}
             {/* Main content area */}
             <div className={`transition-all duration-300 ease-in-out flex-grow ${isSidebarOpen ? 'xl:ml-[25rem]' : 'ml-0'} flex flex-col`}> {/* Added flex flex-col */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 flex-grow"> {/* Added flex-grow */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 flex-grow"> {/* Changed xl:grid-cols-4 to xl:grid-cols-3 */}
                     {/* Column 1: Estampa */}
                     <div className="flex flex-col"> {/* Added flex flex-col */}
                         <CreatorPrintSection 
@@ -599,10 +516,11 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                         <CreatorClothingSection {...clothingProps} />
                     </div>
 
-                    {/* Column 3: Frente */}
-                    <div className="flex flex-col"> {/* Added flex flex-col */}
+                    {/* Column 3: Frente & Costas */}
+                    <div className="flex flex-col gap-6"> {/* New container for Frente and Costas */}
+                        {/* Frente */}
                         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex-grow flex flex-col"> {/* Added flex-grow flex flex-col */}
-                            <h3 className="text-center text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Frente</h3>
+                            {/* Removed h3 title */}
                             <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2 flex-grow"> {/* Added flex-grow */}
                                 {precompositePreviewUrl ? (
                                     precompositePreviewUrlBefore ? (
@@ -633,17 +551,16 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                                     handleSavePreviewToHistory={uiProps.handleSavePreviewToHistory}
                                     handleOpenMaskEditorForEdit={uiProps.handleOpenMaskEditorForEdit}
                                     handleAddBackImage={clothingProps.handleAddBackImage}
+                                    isBackPreview={false} // Indicate this is the front preview
                                 />
                                 {/* Title inside the card */}
                                 <div className="absolute top-2 left-2 bg-black/60 text-white text-sm font-bold px-2 py-1 rounded-md">Frente</div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Column 4: Costas */}
-                    <div className="flex flex-col"> {/* Added flex flex-col */}
+                        {/* Costas */}
                         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex-grow flex flex-col"> {/* Added flex-grow flex flex-col */}
-                            <h3 className="text-center text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Costas</h3>
+                            {/* Removed h3 title */}
                             <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2 flex-grow"> {/* Added flex-grow */}
                                 {precompositePreviewUrlBack ? <ZoomableImage src={precompositePreviewUrlBack} alt="Pré-visualização das Costas" /> : (
                                     <div className="text-center text-gray-500">
@@ -655,13 +572,13 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                                 {selectedClothing?.base64Back && (
                                     <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                         <button onClick={() => uiProps.handleDownloadPreview(precompositePreviewUrlBack, 'costas')} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title="Baixar Pré-visualização (Costas)">
-                                            <DownloadIcon />
+                                            <DownloadIcon /><span className="ml-1 text-xs">Baixar</span>
                                         </button>
                                         <button onClick={() => uiProps.handleSavePreviewToHistory('back')} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Salvar Prévia no Histórico">
-                                            <BookmarkIcon />
+                                            <BookmarkIcon /><span className="ml-1 text-xs">Salvar</span>
                                         </button>
                                         <button onClick={() => uiProps.handleOpenMaskEditorForEdit(selectedClothing, true)} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-purple-600 hover:scale-110 transition-all" title="Editar Área da Estampa (Costas)">
-                                            <PositionIcon />
+                                            <PositionIcon /><span className="ml-1 text-xs">Editar Máscara</span>
                                         </button>
                                     </div>
                                 )}
