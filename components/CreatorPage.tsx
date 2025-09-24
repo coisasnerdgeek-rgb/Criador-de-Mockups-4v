@@ -501,7 +501,7 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     return (
         <div className="relative flex flex-col h-full">
             {/* Main content area */}
-            <div className={`transition-all duration-300 ease-in-out flex-grow ${isSidebarOpen ? 'xl:ml-[25rem]' : 'xl:ml-[5rem]'} flex flex-col`}>
+            <div className={`transition-all duration-300 ease-in-out flex-grow ${isSidebarOpen ? 'xl:ml-[23rem]' : 'xl:ml-[3rem]'} flex flex-col`}>
                 <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 flex-grow ${isSidebarOpen ? 'xl:grid-cols-2' : 'xl:grid-cols-3'}`}>
                     {/* Column 1: Estampa */}
                     <div className="flex flex-col">
@@ -607,10 +607,10 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
             </div>
 
             {/* Sidebar Panel (Main Menu + Detailed Settings) */}
-            <div className={`fixed top-16 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transition-transform duration-300 ease-in-out w-[25rem] ${isSidebarOpen ? 'translate-x-0' : '-translate-x-[20rem]'}`}>
+            <div className={`fixed top-16 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out w-[23rem] ${isSidebarOpen ? 'left-0' : 'left-[-20rem]'}`}>
                 <div className="flex h-full">
-                    {/* Nível 1: Menu Principal (w-20) */}
-                    <div className="w-20 bg-gray-200 dark:bg-gray-900/50 p-2 flex flex-col items-center justify-between">
+                    {/* Nível 1: Menu Principal (w-12) */}
+                    <div className="w-12 bg-gray-200 dark:bg-gray-900/50 p-2 flex flex-col items-center justify-between">
                         <div className="space-y-2 w-full">
                             <button 
                                 onClick={() => setActiveSettingTab('generationType')} 
@@ -664,26 +664,24 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                         {/* Toggle button removed from here */}
                     </div>
 
-                    {/* Nível 2: Configurações Detalhadas */}
-                    {isSidebarOpen && (
-                        <div className="flex-grow w-80 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900 flex flex-col justify-between">
-                            {/* Área de conteúdo para as configurações ativas */}
-                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg space-y-4 flex-grow">
-                                {renderSettingContent()}
-                            </div>
-                            {/* Ações de Geração fixas no rodapé */}
-                            <div className="mt-4">
-                                <GenerateActions {...actionsProps} />
-                            </div>
+                    {/* Nível 2: Configurações Detalhadas (w-80) */}
+                    <div className="flex-grow w-80 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900 flex flex-col justify-between">
+                        {/* Área de conteúdo para as configurações ativas */}
+                        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg space-y-4 flex-grow">
+                            {renderSettingContent()}
                         </div>
-                    )}
+                        {/* Ações de Geração fixas no rodapé */}
+                        <div className="mt-4">
+                            <GenerateActions {...actionsProps} />
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Sidebar Toggle Button (fixed and always visible) */}
             <button 
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className={`fixed top-1/2 -translate-y-1/2 z-40 p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-all duration-300 ${isSidebarOpen ? 'left-[25rem]' : 'left-[5rem]'}`}
+                className={`fixed top-1/2 -translate-y-1/2 z-40 p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-all duration-300 ${isSidebarOpen ? 'left-[23rem]' : 'left-[3rem]'}`}
                 title={isSidebarOpen ? "Esconder Painel de IA" : "Mostrar Painel de IA"}
             >
                 {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
