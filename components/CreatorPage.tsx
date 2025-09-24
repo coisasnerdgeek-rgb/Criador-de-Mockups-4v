@@ -17,7 +17,13 @@ import {
 } from './Icons';
 
 // Import new sidebar components
-import { CreatorGenerationOptionsAndActionsSection } from './sidebar/CreatorGenerationOptionsAndActionsSection.tsx';
+import { GenerationTypeSetting } from './sidebar/GenerationTypeSetting.tsx';
+import { AspectRatioSetting } from './sidebar/AspectRatioSetting.tsx';
+import { GenerationModeSetting } from './sidebar/GenerationModeSetting.tsx';
+import { ColorSetting } from './sidebar/ColorSetting.tsx';
+import { BlendModeSetting } from './sidebar/BlendModeSetting.tsx';
+import { BackgroundSetting } from './sidebar/BackgroundSetting.tsx';
+import { GenerateActions } from './sidebar/GenerateActions.tsx';
 
 
 // --- Type Definitions ---
@@ -510,7 +516,7 @@ const CreatorPrintSection = memo((props: CreatorPagePrintsProps & {
 });
 
 // Define the type for sidebar setting tabs
-type SidebarSettingTab = 'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background' | 'generateActions';
+type SidebarSettingTab = 'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'; // Removed 'generateActions'
 
 export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     const { 
@@ -551,13 +557,32 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
         printInputRef.current?.click();
     }, []);
 
+    const renderSettingContent = () => {
+        switch (activeSettingTab) {
+            case 'generationType':
+                return <GenerationTypeSetting {...generationProps} />;
+            case 'aspectRatio':
+                return <AspectRatioSetting {...generationProps} />;
+            case 'generationMode':
+                return <GenerationModeSetting {...generationProps} />;
+            case 'color':
+                return <ColorSetting {...generationProps} printsProps={printsProps} />;
+            case 'blendMode':
+                return <BlendModeSetting {...generationProps} />;
+            case 'background':
+                return <BackgroundSetting {...generationProps} />;
+            default:
+                return null;
+        }
+    };
+
     return (
         <div className="relative">
             {/* Main content area */}
             <div className={`transition-all duration-300 ease-in-out ${isSidebarOpen ? 'xl:ml-[25rem]' : 'ml-0'}`}>
                 <div className="grid grid-cols-1 xl:grid-cols-9 gap-6">
                     <div className="xl:col-span-3 space-y-6">
-                        <CreatorClothingSection {...clothingProps} />
+                        {/* Swapped order: Estampa (Prints) first, then Roupas (Clothing) */}
                         <CreatorPrintSection 
                             {...printsProps} 
                             onAddPrintClick={handleAddPrintClick}
@@ -566,6 +591,7 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                             onPrintDragLeave={handlePrintDragLeave}
                             isDraggingPrint={isDraggingPrint}
                         />
+                        <CreatorClothingSection {...clothingProps} />
                     </div>
 
                     <div className="xl:col-span-6 space-y-6">
@@ -692,14 +718,6 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                                 <ImageIcon className="h-5 w-5" />
                                 <span className="text-xs">Fundo</span>
                             </button>
-                            <button 
-                                onClick={() => setActiveSettingTab('generateActions')} 
-                                className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'generateActions' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Gerar Mockup"
-                            >
-                                <MagicWandIcon className="h-5 w-5" />
-                                <span className="text-xs">Gerar</span>
-                            </button>
                         </div>
                         {/* Sidebar Toggle Button - moved inside */}
                         <button 
@@ -712,13 +730,17 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                     </div>
 
                     {/* Level 2: Detailed Settings */}
-                    {isSidebarOpen && activeSettingTab && (
-                        <CreatorGenerationOptionsAndActionsSection 
-                            generationProps={generationProps}
-                            actionsProps={actionsProps}
-                            printsProps={printsProps}
-                            activeSettingTab={activeSettingTab}
-                        />
+                    {isSidebarOpen && (
+                        <div className="flex-grow w-80 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900 flex flex-col justify-between">
+                            {/* Content area for active settings */}
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg space-y-4 animated-mask-outline flex-grow">
+                                {renderSettingContent()}
+                            </div>
+                            {/* Fixed GenerateActions at the bottom */}
+                            <div className="mt-4">
+                                <GenerateActions {...actionsProps} />
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
