@@ -1,7 +1,7 @@
 import React from 'react';
 import { ImageUploader } from '../ImageUploader';
 import { PromptSettings } from '../../types';
-import { ImageIcon } from '../Icons';
+import { ImageIcon, PlusCircleIcon, NoBackgroundIcon } from '../Icons';
 
 interface BackgroundSettingProps {
     backgroundTheme: string;
@@ -22,27 +22,36 @@ export const BackgroundSetting: React.FC<BackgroundSettingProps> = ({
     customBgState,
     handleCustomBackgroundFileChange,
 }) => {
+    const themes = Object.keys(promptSettings.backgrounds);
+
     return (
-        <div className="space-y-2">
+        <div className="space-y-4">
             <label className="text-md font-semibold text-gray-700 dark:text-gray-300 block flex items-center gap-2">
                 <ImageIcon /> Fundo
             </label>
-            <select
-                value={backgroundTheme}
-                onChange={e => { setBackgroundTheme(e.target.value); setCustomBackgroundFile(null); }}
-                className="w-full bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white rounded-md p-2 mb-2"
-            >
-                {Object.keys(promptSettings.backgrounds).map(theme => <option key={theme} value={theme}>{theme}</option>)}
-                {customBackgroundFile && <option value="Personalizado">Personalizado</option>}
-            </select>
-            <ImageUploader
-                title=""
-                onImageUpload={handleCustomBackgroundFileChange}
-                previewUrl={customBackgroundFile ? URL.createObjectURL(customBackgroundFile) : null}
-                isLoading={customBgState.isLoading}
-                error={customBgState.error}
-                onClear={() => { setCustomBackgroundFile(null); setBackgroundTheme(Object.keys(promptSettings.backgrounds)[0]); }}
-            />
+            <div className="grid grid-cols-2 gap-2">
+                {themes.map(theme => (
+                    <button
+                        key={theme}
+                        onClick={() => { setBackgroundTheme(theme); setCustomBackgroundFile(null); }}
+                        className={`p-2 text-sm rounded-md transition-colors flex items-center justify-center gap-1 ${backgroundTheme === theme ? 'bg-purple-600 text-white font-bold' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+                    >
+                        {theme === 'Sem Fundo' && <NoBackgroundIcon className="h-4 w-4" />}
+                        {theme}
+                    </button>
+                ))}
+            </div>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
+                <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300">Fundo Personalizado</h3>
+                <ImageUploader
+                    title=""
+                    onImageUpload={handleCustomBackgroundFileChange}
+                    previewUrl={customBackgroundFile ? URL.createObjectURL(customBackgroundFile) : null}
+                    isLoading={customBgState.isLoading}
+                    error={customBgState.error}
+                    onClear={() => { setCustomBackgroundFile(null); setBackgroundTheme(themes[0]); }}
+                />
+            </div>
         </div>
     );
 };

@@ -94,7 +94,7 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
                     className="bg-green-600 text-white px-2 py-1 text-xs rounded-md hover:bg-green-500 transition-all self-center w-full flex items-center justify-center gap-1 disabled:bg-gray-500 dark:disabled:bg-gray-600"
                     title="Gerar Fundo com IA"
                 >
-                    {isGeneratingBackground ? <LoadingSpinner/> : <MagicWandIcon className="h-4 w-4"/>} Gerar
+                    {isGeneratingBackground ? <LoadingSpinner className="h-4 w-4"/> : <MagicWandIcon className="h-4 w-4"/>} Gerar
                 </button>
                 <button
                     onClick={(e) => {
@@ -112,23 +112,23 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
         </div>
         {selectedClothing?.originalBase64 && (
             <button onClick={(e) => { e.stopPropagation(); handleRevertBackground(); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Reverter para Original">
-                <RevertIcon /><span className="ml-1 text-xs">Reverter</span>
+                <RevertIcon className="h-5 w-5" />
             </button>
         )}
         <button onClick={(e) => { e.stopPropagation(); handleDownloadPreview(precompositePreviewUrl, isBackPreview ? 'costas' : 'frente'); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title={`Baixar Pré-visualização (${isBackPreview ? 'Costas' : 'Frente'})`}>
-            <DownloadIcon /><span className="ml-1 text-xs">Baixar</span>
+            <DownloadIcon className="h-5 w-5" />
         </button>
         <button onClick={(e) => { e.stopPropagation(); handleSavePreviewToHistory(isBackPreview ? 'back' : 'front'); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Salvar Prévia no Histórico">
-            <BookmarkIcon /><span className="ml-1 text-xs">Salvar</span>
+            <BookmarkIcon className="h-5 w-5" />
         </button>
         {selectedClothing && (
             <button onClick={(e) => { e.stopPropagation(); handleOpenMaskEditorForEdit(selectedClothing, isBackPreview); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-purple-600 hover:scale-110 transition-all" title={`Editar Área da Estampa (${isBackPreview ? 'Costas' : 'Frente'})`}>
-            <PositionIcon /><span className="ml-1 text-xs">Editar Máscara</span>
+            <PositionIcon className="h-5 w-5" />
             </button>
         )}
         {selectedClothing && !selectedClothing.base64Back && !isBackPreview && (
             <button onClick={(e) => { e.stopPropagation(); handleAddBackImage(selectedClothing); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title="Adicionar Costas">
-                <PlusCircleIcon /><span className="ml-1 text-xs">Add Costas</span>
+                <PlusCircleIcon className="h-5 w-5" />
             </button>
         )}
     </div>
@@ -256,9 +256,9 @@ export interface CreatorPageGenerationProps {
     blendMode: string;
     setBlendMode: React.Dispatch<React.SetStateAction<string>>;
     backgroundTheme: string;
-    setBackgroundTheme: React.Dispatch<React.SetStateAction<string>>;
+    setBackgroundTheme: React.SetStateAction<string>; // Changed to React.SetStateAction
     customBackgroundFile: File | null;
-    setCustomBackgroundFile: React.Dispatch<React.SetStateAction<File | null>>;
+    setCustomBackgroundFile: React.SetStateAction<File | null>; // Changed to React.SetStateAction
     selectedPoses: Pose[];
     handlePoseSelection: (pose: Pose) => void;
     modelFilter: ModelFilter;
@@ -324,14 +324,14 @@ const CreatorClothingSection = memo((props: CreatorPageClothingProps) => {
     const { name: newClothingName, category: newClothingCategory, nameError: newClothingNameError, url: newClothingUrl, urlBack: newClothingUrlBack } = newClothingForm;
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex flex-col h-full"> {/* Added flex flex-col h-full */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex flex-col h-full">
             <h2 className="text-xl font-bold mb-4 text-cyan-500 dark:text-cyan-400 flex items-center gap-2"><ClothingIcon /> Inserir Roupas</h2>
             <div className="flex border-b border-gray-200 dark:border-gray-600 mb-4">
                 <button onClick={() => setActiveNewClothingTab('saved')} className={`py-2 px-4 font-semibold ${activeNewClothingTab === 'saved' ? 'text-cyan-500 dark:text-cyan-400 border-b-2 border-cyan-500 dark:border-cyan-400' : 'text-gray-500 dark:text-gray-400'}`}>Salvas</button>
                 <button onClick={() => setActiveNewClothingTab('new')} className={`py-2 px-4 font-semibold ${activeNewClothingTab === 'new' ? 'text-cyan-500 dark:text-cyan-400 border-b-2 border-cyan-500 dark:border-cyan-400' : 'text-gray-500 dark:text-gray-400'}`}>Nova Roupa</button>
             </div>
             {activeNewClothingTab === 'new' ? (
-                <div className="space-y-4 animate-fade-in flex-grow overflow-y-auto pr-2"> {/* Added flex-grow overflow-y-auto pr-2 */}
+                <div className="space-y-4 animate-fade-in flex-grow"> {/* Removed overflow-y-auto */}
                     <div className="flex bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
                         <button onClick={() => setActiveNewClothingInputTab('file')} className={`flex-1 py-2 text-sm rounded-md ${activeNewClothingInputTab === 'file' ? 'bg-cyan-600 text-white' : ''}`}>Upload de Arquivo</button>
                         <button onClick={() => setActiveNewClothingInputTab('url')} className={`flex-1 py-2 text-sm rounded-md ${activeNewClothingInputTab === 'url' ? 'bg-cyan-600 text-white' : ''}`}>Usar URL</button>
@@ -381,12 +381,12 @@ const CreatorClothingSection = memo((props: CreatorPageClothingProps) => {
                     </button>
                 </div>
             ) : (
-                <div className="space-y-4 animate-fade-in flex-grow overflow-y-auto pr-2"> {/* Added flex-grow overflow-y-auto pr-2 */}
+                <div className="space-y-4 animate-fade-in flex-grow overflow-y-auto pr-2"> {/* Kept overflow-y-auto for saved clothes list */}
                     <div className="flex flex-wrap gap-2">
                         <button onClick={() => setActiveCategory('Todas')} className={`px-3 py-1 text-sm rounded-full ${activeCategory === 'Todas' ? 'bg-cyan-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}>Todas</button>
                         {clothingCategories.map(cat => <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-3 py-1 text-sm rounded-full ${activeCategory === cat ? 'bg-cyan-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}>{cat}</button>)}
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 h-full"> {/* Changed max-h-96 to h-full */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                         {filteredClothes.map(c => (<ClothingItemCard key={c.id} clothing={c} isSelected={selectedClothing?.id === c.id} onSelect={setSelectedClothing} onDelete={handleDeleteClothing} onRename={setEditingClothingName} onEnlarge={setEnlargedImage} onEditMask={handleOpenMaskEditorForEdit} onAddBack={handleAddBackImage} />))}
                         {filteredClothes.length === 0 && <p className="col-span-3 text-center text-gray-500 py-4">Nenhuma roupa nesta categoria. Adicione uma na aba "Nova Roupa".</p>}
                     </div>
@@ -413,14 +413,14 @@ const CreatorPrintSection = memo((props: CreatorPagePrintsProps & {
     const printInputRef = useRef<HTMLInputElement>(null);
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex flex-col h-full"> {/* Added flex flex-col h-full */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex flex-col h-full">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-cyan-500 dark:text-cyan-400 flex items-center gap-2">
                     <ImageIcon /> Estampa 
                     <span className="text-sm font-normal bg-gray-200 dark:bg-gray-700 text-cyan-500 dark:text-cyan-300 px-2.5 py-0.5 rounded-full">{printsToShow.length}</span>
                 </h2>
             </div>
-            <div className="space-y-4 flex-grow overflow-y-auto pr-2"> {/* Added flex-grow overflow-y-auto pr-2 */}
+            <div className="space-y-4 flex-grow overflow-y-auto pr-2"> {/* Kept overflow-y-auto for prints list */}
                 <div onDrop={onPrintDrop} onDragOver={onPrintDragOver} onDragLeave={onPrintDragLeave} className={`w-full border-2 border-dashed rounded-md p-4 text-center text-gray-500 dark:text-gray-400 transition-colors ${isDraggingPrint ? 'border-purple-400 bg-purple-500/10 dark:bg-purple-900/20' : 'border-gray-400 dark:border-gray-600 hover:border-cyan-500 hover:text-cyan-400'}`}>
                     <button onClick={onAddPrintClick} className="w-full">
                         <><UploadIcon className="h-6 w-6 mx-auto mb-1" /> Adicionar Estampa(s) ou arraste</>
@@ -428,7 +428,7 @@ const CreatorPrintSection = memo((props: CreatorPagePrintsProps & {
                 </div>
                 <input ref={printInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && handlePrintFilesChange(e.target.files)} />
                 {printUploadError && <p className="text-red-400 text-sm whitespace-pre-line">{printUploadError}</p>}
-                <div className="grid grid-cols-3 gap-2 h-full"> {/* Changed max-h-64 to h-full */}
+                <div className="grid grid-cols-3 gap-2">
                     {printsToShow.map(p => (<PrintItemCard key={p.id} print={p} isSelectedFront={selectedPrintId === p.id} isSelectedBack={selectedPrintIdBack === p.id} onSelectFront={setSelectedPrintId} onSelectBack={setSelectedPrintIdBack} onRemoveBg={handleRemovePrintBg} isRemovingBackground={isRemovingBackground} canSelectBack={!!selectedClothing?.base64Back} onEnlarge={setEnlargedImage} onDelete={handleDeletePrint} />))}
                     {printsToShow.length === 0 && <p className="col-span-3 text-gray-500 text-center py-4">Nenhuma estampa encontrada. Adicione uma nova.</p>}
                 </div>
@@ -499,12 +499,12 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     };
 
     return (
-        <div className="relative flex flex-col h-full"> {/* Added flex flex-col h-full */}
+        <div className="relative flex flex-col h-full">
             {/* Main content area */}
-            <div className={`transition-all duration-300 ease-in-out flex-grow ${isSidebarOpen ? 'xl:ml-[25rem]' : 'ml-0'} flex flex-col`}> {/* Added flex flex-col */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 flex-grow"> {/* Changed xl:grid-cols-4 to xl:grid-cols-3 */}
+            <div className={`transition-all duration-300 ease-in-out flex-grow ${isSidebarOpen ? 'xl:ml-[25rem]' : 'ml-0'} flex flex-col`}>
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 flex-grow">
                     {/* Column 1: Estampa */}
-                    <div className="flex flex-col"> {/* Added flex flex-col */}
+                    <div className="flex flex-col">
                         <CreatorPrintSection 
                             {...printsProps} 
                             onAddPrintClick={handleAddPrintClick}
@@ -516,16 +516,16 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                     </div>
 
                     {/* Column 2: Inserir Roupas */}
-                    <div className="flex flex-col"> {/* Added flex flex-col */}
+                    <div className="flex flex-col">
                         <CreatorClothingSection {...clothingProps} />
                     </div>
 
                     {/* Column 3: Frente & Costas */}
-                    <div className="flex flex-col gap-6"> {/* New container for Frente and Costas */}
+                    <div className="flex flex-col gap-6">
                         {/* Frente */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex-grow flex flex-col"> {/* Added flex-grow flex flex-col */}
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex-grow flex flex-col">
                             {/* Removed h3 title */}
-                            <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2 flex-grow"> {/* Added flex-grow */}
+                            <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2 flex-grow">
                                 {precompositePreviewUrl ? (
                                     precompositePreviewUrlBefore ? (
                                         <ImageCompareSlider beforeSrc={precompositePreviewUrlBefore} afterSrc={precompositePreviewUrl} alt="Comparação com/sem fundo" />
@@ -563,9 +563,9 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                         </div>
 
                         {/* Costas */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex-grow flex flex-col"> {/* Added flex-grow flex flex-col */}
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex-grow flex flex-col">
                             {/* Removed h3 title */}
-                            <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2 flex-grow"> {/* Added flex-grow */}
+                            <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2 flex-grow">
                                 {precompositePreviewUrlBack ? <ZoomableImage src={precompositePreviewUrlBack} alt="Pré-visualização das Costas" /> : (
                                     <div className="text-center text-gray-500">
                                         <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
@@ -574,17 +574,25 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                                     </div>
                                 )}
                                 {selectedClothing?.base64Back && (
-                                    <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <button onClick={() => uiProps.handleDownloadPreview(precompositePreviewUrlBack, 'costas')} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title="Baixar Pré-visualização (Costas)">
-                                            <DownloadIcon /><span className="ml-1 text-xs">Baixar</span>
-                                        </button>
-                                        <button onClick={() => uiProps.handleSavePreviewToHistory('back')} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Salvar Prévia no Histórico">
-                                            <BookmarkIcon /><span className="ml-1 text-xs">Salvar</span>
-                                        </button>
-                                        <button onClick={() => uiProps.handleOpenMaskEditorForEdit(selectedClothing, true)} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-purple-600 hover:scale-110 transition-all" title="Editar Área da Estampa (Costas)">
-                                            <PositionIcon /><span className="ml-1 text-xs">Editar Máscara</span>
-                                        </button>
-                                    </div>
+                                    <PreviewToolbar
+                                        generationType={generationProps.generationType}
+                                        setGenerationType={generationProps.setGenerationType}
+                                        backgroundTheme={generationProps.backgroundTheme}
+                                        setBackgroundTheme={generationProps.setBackgroundTheme}
+                                        promptSettings={generationProps.promptSettings}
+                                        customBackgroundFile={generationProps.customBackgroundFile}
+                                        setCustomBackgroundFile={generationProps.setCustomBackgroundFile}
+                                        handleGenerateBackground={generationProps.handleGenerateBackground}
+                                        isGeneratingBackground={generationProps.isGeneratingBackground}
+                                        selectedClothing={selectedClothing}
+                                        handleRevertBackground={generationProps.handleRevertBackground}
+                                        handleDownloadPreview={uiProps.handleDownloadPreview}
+                                        precompositePreviewUrl={precompositePreviewUrlBack} // Use back preview URL
+                                        handleSavePreviewToHistory={uiProps.handleSavePreviewToHistory}
+                                        handleOpenMaskEditorForEdit={uiProps.handleOpenMaskEditorForEdit}
+                                        handleAddBackImage={clothingProps.handleAddBackImage}
+                                        isBackPreview={true} // Indicate this is the back preview
+                                    />
                                 )}
                                 {/* Title inside the card */}
                                 <div className="absolute top-2 left-2 bg-black/60 text-white text-sm font-bold px-2 py-1 rounded-md">Costas</div>

@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
-import { SavedClothing } from '../types';
-import { PencilIcon, TrashIcon, PositionIcon, PlusCircleIcon } from './Icons';
+import { SavedClothing } from '@/types';
+import { PencilIcon, TrashIcon, PositionIcon, PlusCircleIcon } from '@/components/Icons';
 
 interface ClothingItemCardProps {
     clothing: SavedClothing;
