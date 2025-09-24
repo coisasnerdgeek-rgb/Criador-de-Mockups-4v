@@ -3,7 +3,11 @@ import { ImageUploader } from './ImageUploader';
 import { HistoryTimeline } from './HistoryTimeline';
 import { ZoomableImage } from './ZoomableImage';
 import { ImageCompareSlider } from './ImageCompareSlider';
-import { ColorPicker } from './ColorPicker';
+
+// Import new components
+import { ClothingItemCard } from './ClothingItemCard';
+import { PrintItemCard } from './PrintItemCard';
+
 import { 
     SavedClothing, Print, Mask, HistoryItem, GenerationType, GenerationMode, Pose, ModelFilter, 
     PromptSettings, NewClothingFileState, ActiveNewClothingInputTab, NewClothingForm, ColorPalette,
