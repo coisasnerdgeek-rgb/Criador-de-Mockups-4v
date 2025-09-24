@@ -1,6 +1,6 @@
 import React from 'react';
 import { ColorPicker } from '../ColorPicker';
-import { ColorPalette, Print, SavedClothing } from '../../types';
+import { ColorPalette, SavedClothing } from '../../types';
 import { MagicWandIcon, LoadingSpinner, PaletteIcon } from '../Icons';
 
 interface ColorSettingProps {
@@ -12,7 +12,7 @@ interface ColorSettingProps {
     handleSuggestColors: () => Promise<void>;
     isSuggestingColors: boolean;
     suggestedPalettes: ColorPalette[] | null;
-    selectedPrintFront: Print | undefined;
+    // selectedPrintFront: Print | undefined; // Removed as it's not used directly here
 }
 
 export const ColorSetting: React.FC<ColorSettingProps> = ({
@@ -24,7 +24,7 @@ export const ColorSetting: React.FC<ColorSettingProps> = ({
     handleSuggestColors,
     isSuggestingColors,
     suggestedPalettes,
-    selectedPrintFront,
+    // selectedPrintFront, // Removed
 }) => {
     return (
         <div className="space-y-2">
@@ -39,7 +39,7 @@ export const ColorSetting: React.FC<ColorSettingProps> = ({
                 customColors={customColors}
                 suggestedPalettes={suggestedPalettes}
             />
-            <button onClick={handleSuggestColors} disabled={!selectedPrintFront || isSuggestingColors} className="w-full text-sm flex items-center justify-center gap-1.5 bg-purple-600/50 text-white px-3 py-1.5 rounded-md hover:bg-purple-600/80 disabled:bg-gray-600 disabled:cursor-not-allowed">
+            <button onClick={handleSuggestColors} disabled={!selectedClothing || isSuggestingColors} className="w-full text-sm flex items-center justify-center gap-1.5 bg-purple-600/50 text-white px-3 py-1.5 rounded-md hover:bg-purple-600/80 disabled:bg-gray-600 disabled:cursor-not-allowed">
                 {isSuggestingColors ? <LoadingSpinner className="h-4 w-4" /> : <MagicWandIcon className="h-4 w-4" />}
                 Sugerir Cores com IA
             </button>

@@ -22,7 +22,6 @@ import {
 } from './Icons';
 
 // Import new sidebar components
-import { CreatorGenerationOptionsAndActionsSection } from './sidebar/CreatorGenerationOptionsAndActionsSection.tsx';
 import { GenerationTypeSetting } from './sidebar/GenerationTypeSetting.tsx';
 import { AspectRatioSetting } from './sidebar/AspectRatioSetting.tsx';
 import { GenerationModeSetting } from './sidebar/GenerationModeSetting.tsx';
@@ -35,15 +34,6 @@ import { GenerateActions } from './sidebar/GenerateActions.tsx';
 // --- Type Definitions ---
 
 interface PreviewToolbarProps {
-    generationType: GenerationType;
-    setGenerationType: React.Dispatch<React.SetStateAction<GenerationType>>;
-    backgroundTheme: string;
-    setBackgroundTheme: React.Dispatch<React.SetStateAction<string>>;
-    promptSettings: PromptSettings;
-    customBackgroundFile: File | null;
-    setCustomBackgroundFile: React.Dispatch<React.SetStateAction<File | null>>;
-    handleGenerateBackground: () => Promise<void>;
-    isGeneratingBackground: boolean;
     selectedClothing: SavedClothing | null;
     handleRevertBackground: () => void;
     handleDownloadPreview: (url: string | null, side: 'frente' | 'costas') => void;
@@ -55,82 +45,35 @@ interface PreviewToolbarProps {
 }
 
 const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
-    generationType, setGenerationType, backgroundTheme, setBackgroundTheme,
-    promptSettings, customBackgroundFile, setCustomBackgroundFile,
-    handleGenerateBackground, isGeneratingBackground, selectedClothing,
+    selectedClothing,
     handleRevertBackground, handleDownloadPreview, precompositePreviewUrl,
     handleSavePreviewToHistory, handleOpenMaskEditorForEdit, handleAddBackImage,
     isBackPreview
 }) => (
     <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <div className="bg-white/70 dark:bg-gray-900/70 p-2 rounded-lg shadow-lg flex flex-col gap-2" onClick={e => e.stopPropagation()}>
-            <select
-                value={generationType}
-                onChange={(e) => { e.stopPropagation(); setGenerationType(e.target.value as GenerationType); }}
-                className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white text-xs p-1 rounded border border-gray-300 dark:border-gray-600 focus:ring-purple-500 focus:border-purple-500"
-                title="Mudar Tipo de Geração"
-            >
-                <option value="standard">Padrão</option>
-                <option value="poses-3">Poses</option>
-                <option value="models">Modelos</option>
-            </select>
-            <select
-                value={backgroundTheme}
-                onChange={(e) => {
-                    e.stopPropagation();
-                    setBackgroundTheme(e.target.value);
-                    if (e.target.value !== 'Personalizado') setCustomBackgroundFile(null);
-                }}
-                className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white text-xs p-1 rounded border border-gray-300 dark:border-gray-600 focus:ring-purple-500 focus:border-purple-500"
-                title="Mudar Fundo"
-            >
-                {Object.keys(promptSettings.backgrounds).map(theme => <option key={theme} value={theme}>{theme}</option>)}
-                {customBackgroundFile && <option value="Personalizado">Personalizado</option>}
-            </select>
-            <div className="flex justify-around items-center gap-1">
-                <button
-                    onClick={(e) => { e.stopPropagation(); handleGenerateBackground(); }}
-                    disabled={isGeneratingBackground || backgroundTheme === 'Sem Fundo'}
-                    className="bg-green-600 text-white px-2 py-1 text-xs rounded-md hover:bg-green-500 transition-all self-center w-full flex items-center justify-center gap-1 disabled:bg-gray-500 dark:disabled:bg-gray-600"
-                    title="Gerar Fundo com IA"
-                >
-                    {isGeneratingBackground ? <LoadingSpinner className="h-4 w-4"/> : <MagicWandIcon className="h-4 w-4"/>} Gerar
+            {selectedClothing?.originalBase64 && (
+                <button onClick={(e) => { e.stopPropagation(); handleRevertBackground(); }} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white p-1 rounded-full hover:bg-yellow-600 hover:text-white transition-all" title="Reverter para Original">
+                    <RevertIcon className="h-4 w-4" />
                 </button>
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setGenerationType('standard');
-                        setBackgroundTheme(Object.keys(promptSettings.backgrounds)[0]);
-                        setCustomBackgroundFile(null);
-                    }}
-                    className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white p-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-all self-center"
-                    title="Resetar Configurações"
-                >
-                    <ResetIcon className="h-4 w-4" />
+            )}
+            <button onClick={(e) => { e.stopPropagation(); handleDownloadPreview(precompositePreviewUrl, isBackPreview ? 'costas' : 'frente'); }} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white p-1 rounded-full hover:bg-cyan-600 hover:text-white transition-all" title={`Baixar Pré-visualização (${isBackPreview ? 'Costas' : 'Frente'})`}>
+                <DownloadIcon className="h-4 w-4" />
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); handleSavePreviewToHistory(isBackPreview ? 'back' : 'front'); }} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white p-1 rounded-full hover:bg-yellow-600 hover:text-white transition-all" title="Salvar Prévia no Histórico">
+                <BookmarkIcon className="h-4 w-4" />
+            </button>
+            {selectedClothing && (
+                <button onClick={(e) => { e.stopPropagation(); handleOpenMaskEditorForEdit(selectedClothing, isBackPreview); }} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white p-1 rounded-full hover:bg-purple-600 hover:text-white transition-all" title={`Editar Área da Estampa (${isBackPreview ? 'Costas' : 'Frente'})`}>
+                <PositionIcon className="h-4 w-4" />
                 </button>
-            </div>
+            )}
+            {selectedClothing && !selectedClothing.base64Back && !isBackPreview && (
+                <button onClick={(e) => { e.stopPropagation(); handleAddBackImage(selectedClothing); }} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white p-1 rounded-full hover:bg-cyan-600 hover:text-white transition-all" title="Adicionar Costas">
+                    <PlusCircleIcon className="h-4 w-4" />
+                </button>
+            )}
         </div>
-        {selectedClothing?.originalBase64 && (
-            <button onClick={(e) => { e.stopPropagation(); handleRevertBackground(); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Reverter para Original">
-                <RevertIcon className="h-5 w-5" />
-            </button>
-        )}
-        <button onClick={(e) => { e.stopPropagation(); handleDownloadPreview(precompositePreviewUrl, isBackPreview ? 'costas' : 'frente'); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title={`Baixar Pré-visualização (${isBackPreview ? 'Costas' : 'Frente'})`}>
-            <DownloadIcon className="h-5 w-5" />
-        </button>
-        <button onClick={(e) => { e.stopPropagation(); handleSavePreviewToHistory(isBackPreview ? 'back' : 'front'); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Salvar Prévia no Histórico">
-            <BookmarkIcon className="h-5 w-5" />
-        </button>
-        {selectedClothing && (
-            <button onClick={(e) => { e.stopPropagation(); handleOpenMaskEditorForEdit(selectedClothing, isBackPreview); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-purple-600 hover:scale-110 transition-all" title={`Editar Área da Estampa (${isBackPreview ? 'Costas' : 'Frente'})`}>
-            <PositionIcon className="h-5 w-5" />
-            </button>
-        )}
-        {selectedClothing && !selectedClothing.base64Back && !isBackPreview && (
-            <button onClick={(e) => { e.stopPropagation(); handleAddBackImage(selectedClothing); }} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title="Adicionar Costas">
-                <PlusCircleIcon className="h-5 w-5" />
-            </button>
-        )}
     </div>
 );
 
@@ -428,7 +371,7 @@ const CreatorPrintSection = memo((props: CreatorPagePrintsProps & {
                 </div>
                 <input ref={printInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && handlePrintFilesChange(e.target.files)} />
                 {printUploadError && <p className="text-red-400 text-sm whitespace-pre-line">{printUploadError}</p>}
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     {printsToShow.map(p => (<PrintItemCard key={p.id} print={p} isSelectedFront={selectedPrintId === p.id} isSelectedBack={selectedPrintIdBack === p.id} onSelectFront={setSelectedPrintId} onSelectBack={setSelectedPrintIdBack} onRemoveBg={handleRemovePrintBg} isRemovingBackground={isRemovingBackground} canSelectBack={!!selectedClothing?.base64Back} onEnlarge={setEnlargedImage} onDelete={handleDeletePrint} />))}
                     {printsToShow.length === 0 && <p className="col-span-3 text-gray-500 text-center py-4">Nenhuma estampa encontrada. Adicione uma nova.</p>}
                 </div>
@@ -538,15 +481,6 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                                     </div>
                                 )}
                                 <PreviewToolbar
-                                    generationType={generationProps.generationType}
-                                    setGenerationType={generationProps.setGenerationType}
-                                    backgroundTheme={generationProps.backgroundTheme}
-                                    setBackgroundTheme={generationProps.setBackgroundTheme}
-                                    promptSettings={generationProps.promptSettings}
-                                    customBackgroundFile={generationProps.customBackgroundFile}
-                                    setCustomBackgroundFile={generationProps.setCustomBackgroundFile}
-                                    handleGenerateBackground={generationProps.handleGenerateBackground}
-                                    isGeneratingBackground={generationProps.isGeneratingBackground}
                                     selectedClothing={selectedClothing}
                                     handleRevertBackground={generationProps.handleRevertBackground}
                                     handleDownloadPreview={uiProps.handleDownloadPreview}
@@ -573,15 +507,6 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                                 )}
                                 {selectedClothing?.base64Back && (
                                     <PreviewToolbar
-                                        generationType={generationProps.generationType}
-                                        setGenerationType={generationProps.setGenerationType}
-                                        backgroundTheme={generationProps.backgroundTheme}
-                                        setBackgroundTheme={generationProps.setBackgroundTheme}
-                                        promptSettings={generationProps.promptSettings}
-                                        customBackgroundFile={generationProps.customBackgroundFile}
-                                        setCustomBackgroundFile={generationProps.setCustomBackgroundFile}
-                                        handleGenerateBackground={generationProps.handleGenerateBackground}
-                                        isGeneratingBackground={generationProps.isGeneratingBackground}
                                         selectedClothing={selectedClothing}
                                         handleRevertBackground={generationProps.handleRevertBackground}
                                         handleDownloadPreview={uiProps.handleDownloadPreview}
@@ -607,7 +532,7 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
             </div>
 
             {/* Sidebar Panel (Main Menu + Detailed Settings) */}
-            <div className={`fixed top-16 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out w-[19rem] ${isSidebarOpen ? 'translate-x-0' : '-translate-x-[16rem]'}`}>
+            <div className={`fixed top-16 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out w-[19rem] ${isSidebarOpen ? 'left-0' : 'left-[-16rem]'}`}>
                 <div className="flex h-full">
                     {/* Nível 1: Menu Principal (w-12) */}
                     <div className="w-12 bg-gray-200 dark:bg-gray-900/50 p-2 flex flex-col items-center justify-between">
