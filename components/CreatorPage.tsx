@@ -191,13 +191,13 @@ export interface CreatorPageGenerationProps {
     generationAspectRatio: string;
     setGenerationAspectRatio: React.Dispatch<React.SetStateAction<string>>;
     generationMode: GenerationMode;
-    setGenerationMode: React.Dispatch<React.SetStateAction<GenerationMode>>;
+    setGenerationMode: React.SetStateAction<GenerationMode>;
     selectedColor: string | null;
     setSelectedColor: React.Dispatch<React.SetStateAction<string | null>>;
     customColors: string[];
     handleAddCustomColor: (color: string) => void;
     blendMode: string;
-    setBlendMode: React.Dispatch<React.SetStateAction<string>>;
+    setBlendMode: React.SetStateAction<string>; // Changed to React.SetStateAction
     backgroundTheme: string;
     setBackgroundTheme: React.SetStateAction<string>; // Changed to React.SetStateAction
     customBackgroundFile: File | null;
@@ -531,73 +531,70 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                 </div>
             </div>
 
-            {/* Sidebar Panel (Main Menu + Detailed Settings) */}
-            <div className={`fixed top-16 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out w-[19rem] ${isSidebarOpen ? 'left-0' : 'left-[-16rem]'}`}>
-                <div className="flex h-full">
-                    {/* Nível 1: Menu Principal (w-12) */}
-                    <div className="w-12 bg-gray-200 dark:bg-gray-900/50 p-2 flex flex-col items-center justify-between">
-                        <div className="space-y-2 w-full">
-                            <button 
-                                onClick={() => setActiveSettingTab('generationType')} 
-                                className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'generationType' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Tipo de Geração"
-                            >
-                                <PersonIcon className="h-5 w-5" />
-                                <span className="text-xs">Tipo</span>
-                            </button>
-                            <button 
-                                onClick={() => setActiveSettingTab('aspectRatio')} 
-                                className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'aspectRatio' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Proporção da Imagem"
-                            >
-                                <AspectRatioOneOneIcon className="h-5 w-5" />
-                                <span className="text-xs">Proporção</span>
-                            </button>
-                            <button 
-                                onClick={() => setActiveSettingTab('generationMode')} 
-                                className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'generationMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Lados para Gerar"
-                            >
-                                <PosesIcon className="h-5 w-5" />
-                                <span className="text-xs">Lados</span>
-                            </button>
-                            <button 
-                                onClick={() => setActiveSettingTab('color')} 
-                                className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'color' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Cor da Roupa"
-                            >
-                                <PaletteIcon className="h-5 w-5" />
-                                <span className="text-xs">Cor</span>
-                            </button>
-                            <button 
-                                onClick={() => setActiveSettingTab('blendMode')} 
-                                className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'blendMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Modo de Mesclagem"
-                            >
-                                <LayersIcon className="h-5 w-5" />
-                                <span className="text-xs">Mesclagem</span>
-                            </button>
-                            <button 
-                                onClick={() => setActiveSettingTab('background')} 
-                                className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'background' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Fundo"
-                            >
-                                <ImageIcon className="h-5 w-5" />
-                                <span className="text-xs">Fundo</span>
-                            </button>
-                        </div>
-                    </div>
+            {/* Fixed Icon Menu (w-12) */}
+            <div className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-12 bg-gray-200 dark:bg-gray-900/50 p-2 flex flex-col items-center justify-between z-40 shadow-lg">
+                <div className="space-y-2 w-full">
+                    <button 
+                        onClick={() => setActiveSettingTab('generationType')} 
+                        className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'generationType' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                        title="Tipo de Geração"
+                    >
+                        <PersonIcon className="h-5 w-5" />
+                        <span className="text-xs">Tipo</span>
+                    </button>
+                    <button 
+                        onClick={() => setActiveSettingTab('aspectRatio')} 
+                        className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'aspectRatio' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                        title="Proporção da Imagem"
+                    >
+                        <AspectRatioOneOneIcon className="h-5 w-5" />
+                        <span className="text-xs">Proporção</span>
+                    </button>
+                    <button 
+                        onClick={() => setActiveSettingTab('generationMode')} 
+                        className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'generationMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                        title="Lados para Gerar"
+                    >
+                        <PosesIcon className="h-5 w-5" />
+                        <span className="text-xs">Lados</span>
+                    </button>
+                    <button 
+                        onClick={() => setActiveSettingTab('color')} 
+                        className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'color' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                        title="Cor da Roupa"
+                    >
+                        <PaletteIcon className="h-5 w-5" />
+                        <span className="text-xs">Cor</span>
+                    </button>
+                    <button 
+                        onClick={() => setActiveSettingTab('blendMode')} 
+                        className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'blendMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                        title="Modo de Mesclagem"
+                    >
+                        <LayersIcon className="h-5 w-5" />
+                        <span className="text-xs">Mesclagem</span>
+                    </button>
+                    <button 
+                        onClick={() => setActiveSettingTab('background')} 
+                        className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'background' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                        title="Fundo"
+                    >
+                        <ImageIcon className="h-5 w-5" />
+                        <span className="text-xs">Fundo</span>
+                    </button>
+                </div>
+            </div>
 
-                    {/* Nível 2: Configurações Detalhadas (w-64) */}
-                    <div className="flex-grow w-64 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900 flex flex-col justify-between">
-                        {/* Área de conteúdo para as configurações ativas */}
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg space-y-4 flex-grow">
-                            {renderSettingContent()}
-                        </div>
-                        {/* Ações de Geração fixas no rodapé */}
-                        <div className="mt-4">
-                            <GenerateActions {...actionsProps} />
-                        </div>
+            {/* Sliding Detailed Settings Panel (w-64) */}
+            <div className={`fixed top-16 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out w-64 ${isSidebarOpen ? 'left-12' : 'left-[-16rem]'}`}>
+                <div className="flex-grow w-64 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900 flex flex-col justify-between">
+                    {/* Área de conteúdo para as configurações ativas */}
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg space-y-4 flex-grow">
+                        {renderSettingContent()}
+                    </div>
+                    {/* Ações de Geração fixas no rodapé */}
+                    <div className="mt-4">
+                        <GenerateActions {...actionsProps} />
                     </div>
                 </div>
             </div>
