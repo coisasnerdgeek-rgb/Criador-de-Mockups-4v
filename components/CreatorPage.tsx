@@ -17,13 +17,7 @@ import {
 } from './Icons';
 
 // Import new sidebar components
-import { GenerationTypeSetting } from './sidebar/GenerationTypeSetting.tsx';
-import { AspectRatioSetting } from './sidebar/AspectRatioSetting.tsx';
-import { GenerationModeSetting } from './sidebar/GenerationModeSetting.tsx';
-import { ColorSetting } from './sidebar/ColorSetting.tsx';
-import { BlendModeSetting } from './sidebar/BlendModeSetting.tsx';
-import { BackgroundSetting } from './sidebar/BackgroundSetting.tsx';
-import { GenerateActions } from './sidebar/GenerateActions.tsx';
+import { CreatorGenerationOptionsAndActionsSection } from './sidebar/CreatorGenerationOptionsAndActionsSection.tsx';
 
 
 // --- Type Definitions ---
@@ -557,27 +551,6 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
         printInputRef.current?.click();
     }, []);
 
-    const renderSettingContent = () => {
-        switch (activeSettingTab) {
-            case 'generationType':
-                return <GenerationTypeSetting {...generationProps} />;
-            case 'aspectRatio':
-                return <AspectRatioSetting {...generationProps} />;
-            case 'generationMode':
-                return <GenerationModeSetting {...generationProps} />;
-            case 'color':
-                return <ColorSetting {...generationProps} printsProps={printsProps} />;
-            case 'blendMode':
-                return <BlendModeSetting {...generationProps} />;
-            case 'background':
-                return <BackgroundSetting {...generationProps} />;
-            case 'generateActions':
-                return <GenerateActions {...actionsProps} />;
-            default:
-                return null;
-        }
-    };
-
     return (
         <div className="relative">
             {/* Main content area */}
@@ -740,11 +713,12 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
 
                     {/* Level 2: Detailed Settings */}
                     {isSidebarOpen && activeSettingTab && (
-                        <div className="flex-grow w-80 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900">
-                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg space-y-4 animated-mask-outline">
-                                {renderSettingContent()}
-                            </div>
-                        </div>
+                        <CreatorGenerationOptionsAndActionsSection 
+                            generationProps={generationProps}
+                            actionsProps={actionsProps}
+                            printsProps={printsProps}
+                            activeSettingTab={activeSettingTab}
+                        />
                     )}
                 </div>
             </div>
