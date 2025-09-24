@@ -107,7 +107,7 @@ const BatchGenerationProgressModal: React.FC<{ status: BatchGenerationStatus; on
                         
                         <div className="text-center p-3 bg-gray-100 dark:bg-gray-900/50 rounded-md">
                             <p className="text-sm text-gray-500 dark:text-gray-400">Processando agora:</p>
-                            <p className className="font-semibold text-gray-800 dark:text-gray-200 truncate" title={status.currentItem}>
+                            <p className="font-semibold text-gray-800 dark:text-gray-200 truncate" title={status.currentItem}>
                                 {status.currentItem || "Iniciando..."}
                             </p>
                         </div>
@@ -1066,7 +1066,7 @@ const handleMaskCancel = () => {
     }
 }, [savedClothes, savedPrints]);
 
-const handleGenerateAssociationsMockupsBatch = useCallback(async () => {
+const handleGenerateAssociationsBatch = useCallback(async () => {
     isBatchCancelled.current = false;
     const generationTasks: { clothing: SavedClothing, combination: any }[] = [];
     
@@ -1147,7 +1147,7 @@ const handleGenerateAssociationsMockupsBatch = useCallback(async () => {
                 if (!precompositeBack) throw new Error("Falha ao criar pré-composição das costas.");
                 
                 const backResultB64 = await generateMockup(promptSettings.mockup, precompositeBack.base64, precompositeBack.mimeType, undefined, selectedColor, backgroundThemeDescription, frontResultB64, frontResultB64 ? 'image/png' : undefined, customBgData, !frontResultB64, true);
-                finalImageUrls.push(`data:image/png;base664,${backResultB64}`);
+                finalImageUrls.push(`data:image/png;base64,${backResultB64}`);
             }
 
             if (finalImageUrls.length > 0) {
@@ -1899,7 +1899,7 @@ const handleCancelBatchGeneration = () => {
             isBatchingPreviews,
             error,
             handleGenerate,
-            handleGenerateAssociationsBatch: handleGenerateAssociationsMockupsBatch, // Corrected function name
+            handleGenerateAssociationsBatch: handleGenerateAssociationsBatch,
             canGenerate,
             handleDownloadPreviewsAsZip,
             isZippingPreview,
@@ -1950,7 +1950,7 @@ const handleCancelBatchGeneration = () => {
                     onDeleteClothing={handleDeleteClothing}
                     onRenameClothing={setEditingClothingName}
                     onUploadPrint={handlePrintFilesChange}
-                    onBatchGenerateMockups={handleGenerateAssociationsMockupsBatch}
+                    onBatchGenerateMockups={handleGenerateAssociationsBatch}
                     isBatchGenerating={!!batchGenerationStatus?.isActive}
                 />;
             case 'settings':
@@ -2029,7 +2029,7 @@ const handleCancelBatchGeneration = () => {
                     initialMask={clothingToEdit ? (clothingToEdit.isBack ? clothingToEdit.clothing.maskBack : clothingToEdit.clothing.mask) : null}
                     saveButtonText={clothingToEdit ? "Salvar Edição" : undefined}
                     savedMasks={savedMasks}
-                    onSaveCurrentMask={handleSaveMask} {/* Corrected prop */}
+                    onSaveCurrentMask={handleSaveMask}
                     onDeleteSavedMask={handleDeleteSavedMask}
                     onUpdateSavedMask={handleUpdateSavedMask}
                 />
