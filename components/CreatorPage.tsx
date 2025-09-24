@@ -254,7 +254,7 @@ export interface CreatorPageGenerationProps {
     customColors: string[];
     handleAddCustomColor: (color: string) => void;
     blendMode: string;
-    setBlendMode: React.Dispatch<React.SetStateAction<string>>;
+    setBlendMode: React.SetStateAction<string>; // Changed to React.SetStateAction
     backgroundTheme: string;
     setBackgroundTheme: React.SetStateAction<string>; // Changed to React.SetStateAction
     customBackgroundFile: File | null;
@@ -331,7 +331,7 @@ const CreatorClothingSection = memo((props: CreatorPageClothingProps) => {
                 <button onClick={() => setActiveNewClothingTab('new')} className={`py-2 px-4 font-semibold ${activeNewClothingTab === 'new' ? 'text-cyan-500 dark:text-cyan-400 border-b-2 border-cyan-500 dark:border-cyan-400' : 'text-gray-500 dark:text-gray-400'}`}>Nova Roupa</button>
             </div>
             {activeNewClothingTab === 'new' ? (
-                <div className="space-y-4 animate-fade-in flex-grow"> {/* Removed overflow-y-auto */}
+                <div className="space-y-4 animate-fade-in flex-grow overflow-y-auto pr-2">
                     <div className="flex bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
                         <button onClick={() => setActiveNewClothingInputTab('file')} className={`flex-1 py-2 text-sm rounded-md ${activeNewClothingInputTab === 'file' ? 'bg-cyan-600 text-white' : ''}`}>Upload de Arquivo</button>
                         <button onClick={() => setActiveNewClothingInputTab('url')} className={`flex-1 py-2 text-sm rounded-md ${activeNewClothingInputTab === 'url' ? 'bg-cyan-600 text-white' : ''}`}>Usar URL</button>
@@ -381,7 +381,7 @@ const CreatorClothingSection = memo((props: CreatorPageClothingProps) => {
                     </button>
                 </div>
             ) : (
-                <div className="space-y-4 animate-fade-in flex-grow overflow-y-auto pr-2"> {/* Kept overflow-y-auto for saved clothes list */}
+                <div className="space-y-4 animate-fade-in flex-grow overflow-y-auto pr-2">
                     <div className="flex flex-wrap gap-2">
                         <button onClick={() => setActiveCategory('Todas')} className={`px-3 py-1 text-sm rounded-full ${activeCategory === 'Todas' ? 'bg-cyan-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}>Todas</button>
                         {clothingCategories.map(cat => <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-3 py-1 text-sm rounded-full ${activeCategory === cat ? 'bg-cyan-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}>{cat}</button>)}
@@ -420,7 +420,7 @@ const CreatorPrintSection = memo((props: CreatorPagePrintsProps & {
                     <span className="text-sm font-normal bg-gray-200 dark:bg-gray-700 text-cyan-500 dark:text-cyan-300 px-2.5 py-0.5 rounded-full">{printsToShow.length}</span>
                 </h2>
             </div>
-            <div className="space-y-4 flex-grow overflow-y-auto pr-2"> {/* Kept overflow-y-auto for prints list */}
+            <div className="space-y-4 flex-grow overflow-y-auto pr-2">
                 <div onDrop={onPrintDrop} onDragOver={onPrintDragOver} onDragLeave={onPrintDragLeave} className={`w-full border-2 border-dashed rounded-md p-4 text-center text-gray-500 dark:text-gray-400 transition-colors ${isDraggingPrint ? 'border-purple-400 bg-purple-500/10 dark:bg-purple-900/20' : 'border-gray-400 dark:border-gray-600 hover:border-cyan-500 hover:text-cyan-400'}`}>
                     <button onClick={onAddPrintClick} className="w-full">
                         <><UploadIcon className="h-6 w-6 mx-auto mb-1" /> Adicionar Estampa(s) ou arraste</>
@@ -449,7 +449,7 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     const { selectedClothing } = clothingProps;
     const { precompositePreviewUrl, precompositePreviewUrlBack, precompositePreviewUrlBefore } = uiProps;
 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar starts closed
     const [activeSettingTab, setActiveSettingTab] = useState<SidebarSettingTab | null>('generationType'); // Default to first tab
     const [isDraggingPrint, setIsDraggingPrint] = useState(false);
     const printInputRef = useRef<HTMLInputElement>(null);
@@ -501,8 +501,8 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     return (
         <div className="relative flex flex-col h-full">
             {/* Main content area */}
-            <div className={`transition-all duration-300 ease-in-out flex-grow ${isSidebarOpen ? 'xl:ml-[25rem]' : 'ml-0'} flex flex-col`}>
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 flex-grow">
+            <div className={`transition-all duration-300 ease-in-out flex-grow ${isSidebarOpen ? 'xl:ml-[25rem]' : 'xl:ml-[5rem]'} flex flex-col`}> {/* Adjusted ml for closed sidebar */}
+                <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 flex-grow ${isSidebarOpen ? 'xl:grid-cols-2' : 'xl:grid-cols-3'}`}> {/* Dynamic grid columns */}
                     {/* Column 1: Estampa */}
                     <div className="flex flex-col">
                         <CreatorPrintSection 
@@ -609,9 +609,9 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
             </div>
 
             {/* Painel da Barra Lateral */}
-            <div className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className={`fixed top-16 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out w-[25rem] ${isSidebarOpen ? 'left-0' : 'left-[-20rem]'}`}> {/* Adjusted left for closed state */}
                 <div className="flex h-full">
-                    {/* Nível 1: Menu Principal */}
+                    {/* Nível 1: Menu Principal (w-20) */}
                     <div className="w-20 bg-gray-200 dark:bg-gray-900/50 p-2 flex flex-col items-center justify-between">
                         <div className="space-y-2 w-full">
                             <button 
