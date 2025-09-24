@@ -254,7 +254,7 @@ export interface CreatorPageGenerationProps {
     customColors: string[];
     handleAddCustomColor: (color: string) => void;
     blendMode: string;
-    setBlendMode: React.SetStateAction<string>; // Changed to React.SetStateAction
+    setBlendMode: React.Dispatch<React.SetStateAction<string>>;
     backgroundTheme: string;
     setBackgroundTheme: React.SetStateAction<string>; // Changed to React.SetStateAction
     customBackgroundFile: File | null;
@@ -501,8 +501,8 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     return (
         <div className="relative flex flex-col h-full">
             {/* Main content area */}
-            <div className={`transition-all duration-300 ease-in-out flex-grow ${isSidebarOpen ? 'xl:ml-[25rem]' : 'xl:ml-[5rem]'} flex flex-col`}> {/* Adjusted ml for closed sidebar */}
-                <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 flex-grow ${isSidebarOpen ? 'xl:grid-cols-2' : 'xl:grid-cols-3'}`}> {/* Dynamic grid columns */}
+            <div className={`transition-all duration-300 ease-in-out flex-grow ${isSidebarOpen ? 'xl:ml-[25rem]' : 'xl:ml-[5rem]'} flex flex-col`}>
+                <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 flex-grow ${isSidebarOpen ? 'xl:grid-cols-2' : 'xl:grid-cols-3'}`}>
                     {/* Column 1: Estampa */}
                     <div className="flex flex-col">
                         <CreatorPrintSection 
@@ -524,7 +524,6 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                     <div className="flex flex-col gap-6">
                         {/* Frente */}
                         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex-grow flex flex-col">
-                            {/* Removed h3 title */}
                             <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2 flex-grow">
                                 {precompositePreviewUrl ? (
                                     precompositePreviewUrlBefore ? (
@@ -564,7 +563,6 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
 
                         {/* Costas */}
                         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex-grow flex flex-col">
-                            {/* Removed h3 title */}
                             <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2 flex-grow">
                                 {precompositePreviewUrlBack ? <ZoomableImage src={precompositePreviewUrlBack} alt="Pré-visualização das Costas" /> : (
                                     <div className="text-center text-gray-500">
@@ -608,8 +606,8 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                 </div>
             </div>
 
-            {/* Painel da Barra Lateral */}
-            <div className={`fixed top-16 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out w-[25rem] ${isSidebarOpen ? 'left-0' : 'left-[-20rem]'}`}> {/* Adjusted left for closed state */}
+            {/* Sidebar Panel (Main Menu + Detailed Settings) */}
+            <div className={`fixed top-16 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transition-transform duration-300 ease-in-out w-[25rem] ${isSidebarOpen ? 'translate-x-0' : '-translate-x-[20rem]'}`}>
                 <div className="flex h-full">
                     {/* Nível 1: Menu Principal (w-20) */}
                     <div className="w-20 bg-gray-200 dark:bg-gray-900/50 p-2 flex flex-col items-center justify-between">
@@ -663,14 +661,7 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                                 <span className="text-xs">Fundo</span>
                             </button>
                         </div>
-                        {/* Sidebar Toggle Button - moved inside */}
-                        <button 
-                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                            className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
-                            title={isSidebarOpen ? "Esconder Painel de IA" : "Mostrar Painel de IA"}
-                        >
-                            {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-                        </button>
+                        {/* Toggle button removed from here */}
                     </div>
 
                     {/* Nível 2: Configurações Detalhadas */}
@@ -688,6 +679,15 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                     )}
                 </div>
             </div>
+
+            {/* Sidebar Toggle Button (fixed and always visible) */}
+            <button 
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className={`fixed top-1/2 -translate-y-1/2 z-40 p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-all duration-300 ${isSidebarOpen ? 'left-[25rem]' : 'left-[5rem]'}`}
+                title={isSidebarOpen ? "Esconder Painel de IA" : "Mostrar Painel de IA"}
+            >
+                {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+            </button>
         </div>
     );
 };
