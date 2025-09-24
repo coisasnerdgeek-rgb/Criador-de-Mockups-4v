@@ -107,7 +107,7 @@ const BatchGenerationProgressModal: React.FC<{ status: BatchGenerationStatus; on
                         
                         <div className="text-center p-3 bg-gray-100 dark:bg-gray-900/50 rounded-md">
                             <p className="text-sm text-gray-500 dark:text-gray-400">Processando agora:</p>
-                            <p className="font-semibold text-gray-800 dark:text-gray-200 truncate" title={status.currentItem}>
+                            <p className className="font-semibold text-gray-800 dark:text-gray-200 truncate" title={status.currentItem}>
                                 {status.currentItem || "Iniciando..."}
                             </p>
                         </div>
@@ -1734,8 +1734,8 @@ const handleCancelBatchGeneration = () => {
                 width: m.width,
                 height: m.height,
                 rotation: m.rotation,
-                skew_x: m.skewX,
-                skew_y: m.skewY,
+                skewX: m.skew_x,
+                skewY: m.skew_y,
             }));
             await supabase.from('saved_masks').insert(dbSavedMasksRecords);
             
@@ -1899,7 +1899,7 @@ const handleCancelBatchGeneration = () => {
             isBatchingPreviews,
             error,
             handleGenerate,
-            handleGenerateAssociationsBatch,
+            handleGenerateAssociationsBatch: handleGenerateAssociationsMockupsBatch, // Corrected function name
             canGenerate,
             handleDownloadPreviewsAsZip,
             isZippingPreview,
@@ -2029,7 +2029,7 @@ const handleCancelBatchGeneration = () => {
                     initialMask={clothingToEdit ? (clothingToEdit.isBack ? clothingToEdit.clothing.maskBack : clothingToEdit.clothing.mask) : null}
                     saveButtonText={clothingToEdit ? "Salvar Edição" : undefined}
                     savedMasks={savedMasks}
-                    onSaveCurrentMask={handleSaveCurrentMask}
+                    onSaveCurrentMask={handleSaveMask} {/* Corrected prop */}
                     onDeleteSavedMask={handleDeleteSavedMask}
                     onUpdateSavedMask={handleUpdateSavedMask}
                 />
