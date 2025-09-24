@@ -17,6 +17,7 @@ import {
 } from './Icons';
 
 // Import new sidebar components
+import { CreatorGenerationOptionsAndActionsSection } from './sidebar/CreatorGenerationOptionsAndActionsSection.tsx';
 import { GenerationTypeSetting } from './sidebar/GenerationTypeSetting.tsx';
 import { AspectRatioSetting } from './sidebar/AspectRatioSetting.tsx';
 import { GenerationModeSetting } from './sidebar/GenerationModeSetting.tsx';
@@ -493,7 +494,7 @@ const CreatorPrintSection = memo((props: CreatorPagePrintsProps & {
     return (
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-cyan-500 dark:text-cyan-400 flex items-center gap-2">
+                <h2 className="text-xl font-bold mb-4 text-cyan-500 dark:text-cyan-400 flex items-center gap-2">
                     <ImageIcon /> Estampa 
                     <span className="text-sm font-normal bg-gray-200 dark:bg-gray-700 text-cyan-500 dark:text-cyan-300 px-2.5 py-0.5 rounded-full">{printsToShow.length}</span>
                 </h2>
@@ -580,9 +581,9 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
         <div className="relative">
             {/* Main content area */}
             <div className={`transition-all duration-300 ease-in-out ${isSidebarOpen ? 'xl:ml-[25rem]' : 'ml-0'}`}>
-                <div className="grid grid-cols-1 xl:grid-cols-9 gap-6">
-                    <div className="xl:col-span-3 space-y-6">
-                        {/* Swapped order: Estampa (Prints) first, then Roupas (Clothing) */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6"> {/* Changed grid structure */}
+                    {/* Column 1: Estampa */}
+                    <div className="space-y-6">
                         <CreatorPrintSection 
                             {...printsProps} 
                             onAddPrintClick={handleAddPrintClick}
@@ -591,83 +592,93 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                             onPrintDragLeave={handlePrintDragLeave}
                             isDraggingPrint={isDraggingPrint}
                         />
+                    </div>
+
+                    {/* Column 2: Inserir Roupas */}
+                    <div className="space-y-6">
                         <CreatorClothingSection {...clothingProps} />
                     </div>
 
-                    <div className="xl:col-span-6 space-y-6">
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <h3 className="text-center text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Frente</h3>
-                                <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2">
-                                    {precompositePreviewUrl ? (
-                                        precompositePreviewUrlBefore ? (
-                                            <ImageCompareSlider beforeSrc={precompositePreviewUrlBefore} afterSrc={precompositePreviewUrl} alt="Comparação com/sem fundo" />
-                                        ) : (
-                                            <ZoomableImage src={precompositePreviewUrl} alt="Pré-visualização da Frente" />
-                                        )
+                    {/* Column 3: Frente */}
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="text-center text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Frente</h3>
+                            <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2">
+                                {precompositePreviewUrl ? (
+                                    precompositePreviewUrlBefore ? (
+                                        <ImageCompareSlider beforeSrc={precompositePreviewUrlBefore} afterSrc={precompositePreviewUrl} alt="Comparação com/sem fundo" />
                                     ) : (
-                                        <div className="text-center text-gray-500">
-                                            <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
-                                            <p>Pré-visualização da Frente</p>
-                                        </div>
-                                    )}
-                                    <PreviewToolbar
-                                        generationType={generationProps.generationType}
-                                        setGenerationType={generationProps.setGenerationType}
-                                        backgroundTheme={generationProps.backgroundTheme}
-                                        setBackgroundTheme={generationProps.setBackgroundTheme}
-                                        promptSettings={generationProps.promptSettings}
-                                        customBackgroundFile={generationProps.customBackgroundFile}
-                                        setCustomBackgroundFile={generationProps.setCustomBackgroundFile}
-                                        handleGenerateBackground={generationProps.handleGenerateBackground}
-                                        isGeneratingBackground={generationProps.isGeneratingBackground}
-                                        selectedClothing={selectedClothing}
-                                        handleRevertBackground={generationProps.handleRevertBackground}
-                                        handleDownloadPreview={uiProps.handleDownloadPreview}
-                                        precompositePreviewUrl={precompositePreviewUrl}
-                                        handleSavePreviewToHistory={uiProps.handleSavePreviewToHistory}
-                                        handleOpenMaskEditorForEdit={uiProps.handleOpenMaskEditorForEdit}
-                                        handleAddBackImage={clothingProps.handleAddBackImage}
-                                    />
-                                </div>
+                                        <ZoomableImage src={precompositePreviewUrl} alt="Pré-visualização da Frente" />
+                                    )
+                                ) : (
+                                    <div className="text-center text-gray-500">
+                                        <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
+                                        <p>Pré-visualização da Frente</p>
+                                    </div>
+                                )}
+                                <PreviewToolbar
+                                    generationType={generationProps.generationType}
+                                    setGenerationType={generationProps.setGenerationType}
+                                    backgroundTheme={generationProps.backgroundTheme}
+                                    setBackgroundTheme={generationProps.setBackgroundTheme}
+                                    promptSettings={generationProps.promptSettings}
+                                    customBackgroundFile={generationProps.customBackgroundFile}
+                                    setCustomBackgroundFile={generationProps.setCustomBackgroundFile}
+                                    handleGenerateBackground={generationProps.handleGenerateBackground}
+                                    isGeneratingBackground={generationProps.isGeneratingBackground}
+                                    selectedClothing={selectedClothing}
+                                    handleRevertBackground={generationProps.handleRevertBackground}
+                                    handleDownloadPreview={uiProps.handleDownloadPreview}
+                                    precompositePreviewUrl={precompositePreviewUrl}
+                                    handleSavePreviewToHistory={uiProps.handleSavePreviewToHistory}
+                                    handleOpenMaskEditorForEdit={uiProps.handleOpenMaskEditorForEdit}
+                                    handleAddBackImage={clothingProps.handleAddBackImage}
+                                />
                             </div>
-                            <div>
-                                <h3 className="text-center text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Costas</h3>
-                                <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2">
-                                    {precompositePreviewUrlBack ? <ZoomableImage src={precompositePreviewUrlBack} alt="Pré-visualização das Costas" /> : (
-                                        <div className="text-center text-gray-500">
-                                            <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
-                                            <p>Pré-visualização das Costas</p>
-                                            <span className="text-xs">(Adicione uma imagem de costas à roupa)</span>
-                                        </div>
-                                    )}
-                                    {selectedClothing?.base64Back && (
-                                        <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            <button onClick={() => uiProps.handleDownloadPreview(precompositePreviewUrlBack, 'costas')} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title="Baixar Pré-visualização (Costas)">
-                                                <DownloadIcon />
-                                            </button>
-                                            <button onClick={() => uiProps.handleSavePreviewToHistory('back')} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Salvar Prévia no Histórico">
-                                                <BookmarkIcon />
-                                            </button>
-                                            <button onClick={() => uiProps.handleOpenMaskEditorForEdit(selectedClothing, true)} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-purple-600 hover:scale-110 transition-all" title="Editar Área da Estampa (Costas)">
-                                                <PositionIcon />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                         </div>
-                         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg">
-                            <HistoryTimeline history={generationHistory} onRestore={handleRestoreHistoryItem} onViewAll={() => setIsHistoryModalOpen(true)} />
                         </div>
+                    </div>
+
+                    {/* Column 4: Costas */}
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="text-center text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Costas</h3>
+                            <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2">
+                                {precompositePreviewUrlBack ? <ZoomableImage src={precompositePreviewUrlBack} alt="Pré-visualização das Costas" /> : (
+                                    <div className="text-center text-gray-500">
+                                        <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
+                                        <p>Pré-visualização das Costas</p>
+                                        <span className="text-xs">(Adicione uma imagem de costas à roupa)</span>
+                                    </div>
+                                )}
+                                {selectedClothing?.base64Back && (
+                                    <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <button onClick={() => uiProps.handleDownloadPreview(precompositePreviewUrlBack, 'costas')} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-cyan-600 hover:scale-110 transition-all" title="Baixar Pré-visualização (Costas)">
+                                            <DownloadIcon />
+                                        </button>
+                                        <button onClick={() => uiProps.handleSavePreviewToHistory('back')} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-yellow-600 hover:scale-110 transition-all" title="Salvar Prévia no Histórico">
+                                            <BookmarkIcon />
+                                        </button>
+                                        <button onClick={() => uiProps.handleOpenMaskEditorForEdit(selectedClothing, true)} className="bg-white/70 dark:bg-gray-900/70 text-gray-800 dark:text-white p-2 rounded-full shadow-lg hover:bg-purple-600 hover:scale-110 transition-all" title="Editar Área da Estampa (Costas)">
+                                            <PositionIcon />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {/* History Timeline abaixo das 4 colunas */}
+                <div className="mt-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg">
+                        <HistoryTimeline history={generationHistory} onRestore={handleRestoreHistoryItem} onViewAll={() => setIsHistoryModalOpen(true)} />
                     </div>
                 </div>
             </div>
 
-            {/* Sidebar Panel */}
+            {/* Painel da Barra Lateral */}
             <div className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="flex h-full">
-                    {/* Level 1: Main Menu */}
+                    {/* Nível 1: Menu Principal */}
                     <div className="w-20 bg-gray-200 dark:bg-gray-900/50 p-2 flex flex-col items-center justify-between">
                         <div className="space-y-2 w-full">
                             <button 
@@ -718,8 +729,16 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                                 <ImageIcon className="h-5 w-5" />
                                 <span className="text-xs">Fundo</span>
                             </button>
+                            <button 
+                                onClick={() => setActiveSettingTab('generateActions')} 
+                                className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'generateActions' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                                title="Gerar Mockup"
+                            >
+                                <MagicWandIcon className="h-5 w-5" />
+                                <span className="text-xs">Gerar</span>
+                            </button>
                         </div>
-                        {/* Sidebar Toggle Button - moved inside */}
+                        {/* Botão para alternar a barra lateral */}
                         <button 
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                             className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
@@ -729,14 +748,14 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                         </button>
                     </div>
 
-                    {/* Level 2: Detailed Settings */}
+                    {/* Nível 2: Configurações Detalhadas */}
                     {isSidebarOpen && (
                         <div className="flex-grow w-80 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900 flex flex-col justify-between">
-                            {/* Content area for active settings */}
-                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg space-y-4 animated-mask-outline flex-grow">
+                            {/* Área de conteúdo para as configurações ativas */}
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg space-y-4 flex-grow">
                                 {renderSettingContent()}
                             </div>
-                            {/* Fixed GenerateActions at the bottom */}
+                            {/* Ações de Geração fixas no rodapé */}
                             <div className="mt-4">
                                 <GenerateActions {...actionsProps} />
                             </div>
