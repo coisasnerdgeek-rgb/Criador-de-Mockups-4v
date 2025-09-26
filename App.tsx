@@ -15,7 +15,7 @@ import { supabase } from './src/integrations/supabase/client';
 
 
 // Icons
-import { LogoIcon, SunIcon, MoonIcon, CreatorIcon, SparklesIcon, UsersIcon, GalleryIcon, SettingsIcon, MagicWandIcon, LightbulbIcon } from './components/Icons';
+import { LogoIcon, SunIcon, MoonIcon, CreatorIcon, SparklesIcon, UsersIcon, GalleryIcon, SettingsIcon, MagicWandIcon, LightbulbIcon, ChevronLeftIcon, ChevronRightIcon, LayersIcon } from './components/Icons'; // FIX: Added LayersIcon
 
 // Page Components
 import { CreatorPage } from './components/CreatorPage';
@@ -24,7 +24,7 @@ import { AssociationsPage } from './components/AssociationsPage';
 import { SettingsPage } from './components/SettingsPage';
 import { ImageTreatmentPage } from './components/ImageTreatmentPage';
 import { InspirationGalleryPage } from './components/InspirationGalleryPage';
-
+import { LeftNavigation } from './src/components/LeftNavigation'; // Import LeftNavigation
 
 // Common UI Components
 import { Lightbox } from './components/Lightbox';
@@ -33,6 +33,8 @@ import { MaskCreator } from './components/MaskCreator';
 import { EditClothingNameModal } from './components/EditClothingNameModal';
 import { HistoryModal } from './components/HistoryModal';
 import { ResultDisplay } from './components/ResultDisplay';
+import { GenerateActions } from './components/sidebar/GenerateActions'; // Import GenerateActions for right sidebar
+import { CreatorGenerationOptionsAndActionsSection } from './src/components/sidebar/CreatorGenerationOptionsAndActionsSection'; // FIX: Added import for CreatorGenerationOptionsAndActionsSection
 
 // Types and Constants
 import {
@@ -210,6 +212,12 @@ const App: React.FC = () => {
   const [batchGenerationStatus, setBatchGenerationStatus] = useState<BatchGenerationStatus | null>(null);
   const isBatchCancelled = useRef(false);
   const [suggestedPalettes, setSuggestedPalettes] = useState<ColorPalette[] | null>(null);
+
+  // New state for left navigation expansion
+  const [isLeftNavExpanded, setIsLeftNavExpanded] = useState(false);
+  // New state for right sidebar (CreatorPage settings)
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true); // Start open for CreatorPage
+  const [activeSettingTab, setActiveSettingTab] = useState<'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'>('generationType');
   
   useEffect(() => {
     const root = window.document.documentElement;
@@ -1602,7 +1610,7 @@ const handleCancelBatchGeneration = () => {
             const readImageFromZip = async (path: string | undefined): Promise<string | undefined> => {
                 if (!path) return undefined;
                 const fullPath = basePath + path;
-                const imgFile = zip.file(fullPath);
+                const imgFile = zip.files[fullPath];
                 if (imgFile) {
                     const base64 = await imgFile.async("base64");
                     processedImages++;
@@ -1919,6 +1927,10 @@ const handleCancelBatchGeneration = () => {
         setIsHistoryModalOpen,
         generatedImageUrls,
         setGeneratedImageUrls,
+        isRightSidebarOpen, // Pass right sidebar state
+        setIsRightSidebarOpen, // Pass right sidebar setter
+        activeSettingTab, // Pass active setting tab
+        setActiveSettingTab, // Pass active setting tab setter
     };
     
     const renderPage = () => {
@@ -1974,35 +1986,116 @@ const handleCancelBatchGeneration = () => {
         }
     };
 
+    const leftNavWidth = isLeftNavExpanded ? 'w-60' : 'w-16';
+    const rightSidebarWidth = isRightSidebarOpen ? 'w-80' : 'w-0';
+    const mainContentMarginLeft = isLeftNavExpanded ? 'ml-60' : 'ml-16';
+    const mainContentMarginRight = isRightSidebarOpen && activePage === 'creator' ? 'mr-80' : 'mr-0';
+
+
     return (
-        <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans flex flex-col"> {/* Added flex flex-col */}
-            <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-40 shadow-md">
-                <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <div className="flex items-center gap-4">
-                            <LogoIcon />
-                            <h1 className="text-xl font-bold text-gray-800 dark:text-white">Criador de Mockups</h1>
-                        </div>
-                        <div className="hidden md:flex items-center space-x-1 bg-gray-200 dark:bg-gray-900/50 p-1 rounded-lg">
-                            <button onClick={() => setActivePage('creator')} className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-2 ${activePage === 'creator' ? 'bg-cyan-500 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}><CreatorIcon /> Criador</button>
-                            <button onClick={() => setActivePage('inspiration')} className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-2 ${activePage === 'inspiration' ? 'bg-cyan-500 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}><LightbulbIcon /> Inspiração</button>
-                            <button onClick={() => setActivePage('treatment')} className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-2 ${activePage === 'treatment' ? 'bg-cyan-500 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}><SparklesIcon /> Tratamento</button>
-                            <button onClick={() => setActivePage('associations')} className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-2 ${activePage === 'associations' ? 'bg-cyan-500 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}><UsersIcon /> Associações</button>
-                            <button onClick={() => setActivePage('gallery')} className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-2 ${activePage === 'gallery' ? 'bg-cyan-500 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}><GalleryIcon /> Galeria</button>
-                            <button onClick={() => setActivePage('settings')} className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-2 ${activePage === 'settings' ? 'bg-cyan-500 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}><SettingsIcon /> IA</button>
-                        </div>
-                        <div className="flex items-center">
-                            <button onClick={toggleTheme} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700">
-                                {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+        <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans flex"> {/* Changed to flex */}
+            <LeftNavigation activePage={activePage} setActivePage={setActivePage} isExpanded={isLeftNavExpanded} setIsExpanded={setIsLeftNavExpanded} />
+
+            <div className={`flex-grow transition-all duration-300 ease-in-out ${mainContentMarginLeft} ${mainContentMarginRight}`}>
+                <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-40 shadow-md h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center gap-4">
+                        {/* Title can remain here or be moved */}
+                        <h1 className="text-xl font-bold text-gray-800 dark:text-white">Criador de Mockups</h1>
+                    </div>
+                    <div className="flex items-center">
+                        <button onClick={toggleTheme} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700">
+                            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+                        </button>
+                        {activePage === 'creator' && (
+                            <button 
+                                onClick={() => setIsRightSidebarOpen(prev => !prev)} 
+                                className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 ml-2"
+                                title={isRightSidebarOpen ? "Esconder Painel de Configurações" : "Mostrar Painel de Configurações"}
+                            >
+                                {isRightSidebarOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+                            </button>
+                        )}
+                    </div>
+                </header>
+
+                <main className="p-4 sm:p-6 lg:p-8 flex-grow"> {/* Removed container mx-auto */}
+                    {renderPage()}
+                </main>
+            </div>
+
+            {/* Right Sidebar for CreatorPage settings */}
+            {activePage === 'creator' && (
+                <div className={`fixed top-0 right-0 h-full bg-gray-100 dark:bg-gray-800 shadow-2xl z-40 flex flex-col transition-all duration-300 ease-in-out ${rightSidebarWidth}`}>
+                    <div className="flex items-center justify-between h-16 bg-gray-200 dark:bg-gray-900 px-4 flex-shrink-0">
+                        <h2 className="text-lg font-bold text-gray-800 dark:text-white">Configurações de Geração</h2>
+                        <button 
+                            onClick={() => setIsRightSidebarOpen(false)} 
+                            className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-700"
+                            title="Fechar Painel"
+                        >
+                            <ChevronRightIcon />
+                        </button>
+                    </div>
+                    <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900 p-4 space-y-4">
+                        {/* Setting Tabs */}
+                        <div className="flex flex-col space-y-2">
+                            <button 
+                                onClick={() => setActiveSettingTab('generationType')} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'generationType' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                            >
+                                <CreatorIcon className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-sm">Tipo de Geração</span>
+                            </button>
+                            <button 
+                                onClick={() => setActiveSettingTab('aspectRatio')} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'aspectRatio' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                            >
+                                <LightbulbIcon className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-sm">Proporção da Imagem</span>
+                            </button>
+                            <button 
+                                onClick={() => setActiveSettingTab('generationMode')} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'generationMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                            >
+                                <UsersIcon className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-sm">Lados para Gerar</span>
+                            </button>
+                            <button 
+                                onClick={() => setActiveSettingTab('color')} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'color' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                            >
+                                <SparklesIcon className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-sm">Cor da Roupa</span>
+                            </button>
+                            <button 
+                                onClick={() => setActiveSettingTab('blendMode')} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'blendMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                            >
+                                <LayersIcon className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-sm">Modo de Mesclagem</span>
+                            </button>
+                            <button 
+                                onClick={() => setActiveSettingTab('background')} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'background' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                            >
+                                <SettingsIcon className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-sm">Fundo</span>
                             </button>
                         </div>
+                        
+                        {/* Render active setting content */}
+                        <CreatorGenerationOptionsAndActionsSection 
+                            generationProps={creatorPageProps.generationProps}
+                            actionsProps={creatorPageProps.actionsProps}
+                            printsProps={creatorPageProps.printsProps}
+                            activeSettingTab={activeSettingTab}
+                        />
                     </div>
-                </nav>
-            </header>
-
-            <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow"> {/* Added flex-grow */}
-                {renderPage()}
-            </main>
+                    <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                        <GenerateActions {...creatorPageProps.actionsProps} />
+                    </div>
+                </div>
+            )}
 
             {/* Global Modals and Overlays */}
             {isLoading && (
