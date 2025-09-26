@@ -19,8 +19,8 @@ import {
     PersonIcon, PosesIcon, UploadIcon, ZipIcon, PositionIcon, ZoomInIcon, LayersIcon, 
     UsersIcon, PaletteIcon, NoBackgroundIcon, ClothingIcon, TagIcon, BookmarkIcon, PlusCircleIcon, 
     MinusCircleIcon, ResetIcon, RevertIcon, AspectRatioOneOneIcon, AspectRatioThreeFourIcon, 
-    AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, ChevronLeftIcon, ChevronRightIcon
-} from './Icons';
+    AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, ChevronLeftIcon, ChevronRightIcon, XIcon
+} from './Icons'; // Added XIcon
 
 // Import new sidebar components
 import { GenerationTypeSetting } from './sidebar/GenerationTypeSetting.tsx';

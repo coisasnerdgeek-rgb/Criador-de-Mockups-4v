@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PromptSettings, ImportStatus, Pose, MockupPrompts } from '../types';
-import { CheckIcon, PencilIcon, TrashIcon, ExportIcon, ImportIcon, LoadingSpinner } from './Icons';
+import { CheckIcon, PencilIcon, TrashIcon, ExportIcon, ImportIcon, LoadingSpinner, XIcon } from './Icons';
 
 interface SettingsPageProps {
   clothingCategories: string[];

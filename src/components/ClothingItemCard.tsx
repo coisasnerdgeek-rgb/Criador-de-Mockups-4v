@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { SavedClothing } from '@/types';
-import { PencilIcon, TrashIcon, PositionIcon, PlusCircleIcon, Maximize } from '@/components/Icons'; // Added Maximize
+import { PencilIcon, TrashIcon, PositionIcon, PlusCircleIcon, AspectRatioFreeIcon } from '@/components/Icons'; // Changed Maximize to AspectRatioFreeIcon
 
 interface ClothingItemCardProps {
     clothing: SavedClothing;
@@ -43,7 +43,7 @@ export const ClothingItemCard = memo(({
                     className="bg-cyan-600 text-white p-2 rounded-full shadow-lg hover:bg-cyan-500 transition-all"
                     title="Ver em tamanho real"
                 >
-                    <Maximize className="h-5 w-5" /> {/* Changed to Maximize */}
+                    <AspectRatioFreeIcon className="h-5 w-5" /> {/* Changed to AspectRatioFreeIcon */}
                 </button>
                 <div className="flex gap-2">
                     <button 

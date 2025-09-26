@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { CheckIcon, OriginalColorIcon, MagicWandIcon, LoadingSpinner } from './Icons';
-import { ColorPalette } from '../types';
+import { ColorPalette } from '../types'; // Corrected import path
 
 const presetColors = [
     // Neutrals
@@ -17,9 +17,9 @@ const presetColors = [
     '#34D399', // Emerald
     '#059669', // Green
     '#065F46', // Dark Green
+    '#1E40AF', // Dark Blue
     '#60A5FA', // Blue
     '#2563EB', // Indigo
-    '#1E40AF', // Dark Blue
     '#14B8A6', // Teal
     // Purples & Pinks
     '#A78BFA', // Violet

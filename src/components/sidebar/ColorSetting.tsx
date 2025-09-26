@@ -1,6 +1,6 @@
 import React from 'react';
 import { ColorPicker } from '../ColorPicker';
-import { ColorPalette, SavedClothing } from '../../types';
+import { ColorPalette, SavedClothing } from '../../types'; // Corrected import path
 import { MagicWandIcon, LoadingSpinner, PaletteIcon } from '../Icons';
 
 interface ColorSettingProps {

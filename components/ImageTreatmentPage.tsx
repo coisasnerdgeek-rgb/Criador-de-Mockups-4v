@@ -6,6 +6,7 @@ import { ZoomableImage } from './ZoomableImage';
 import { ImageCompareSlider } from './ImageCompareSlider';
 import { fileToBase64, pngDataUrlToJpgDataUrl, processAndValidateImageFile, downloadDataUrlAsJpg, getImageDimensionsFromUrl } from '../utils/fileUtils';
 import { supabase } from '../src/integrations/supabase/client'; // Import Supabase client
+import { Square } from 'lucide-react'; // Import Square directly from lucide-react for drawing tool
 
 // --- Memoized Child Components for Lists ---
 
@@ -259,6 +260,7 @@ const VisualComposer = memo(({ baseImageSrc, onDraftChange }: { baseImageSrc: st
         updateDraft();
     }, [tool, updateDraft]);
 
+    // Moved handleClear definition before its usage in the dependency array
     const handleClear = useCallback(() => {
         const canvas = canvasRef.current;
         const ctx = contextRef.current;
@@ -266,7 +268,7 @@ const VisualComposer = memo(({ baseImageSrc, onDraftChange }: { baseImageSrc: st
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             updateDraft();
         }
-    }, [handleClear, updateDraft]); // Added handleClear to dependency array
+    }, [updateDraft]); // Removed handleClear from its own dependency array
 
     const colors = ['#FFFFFF', '#FF3B30', '#FF9500', '#FFCC00', '#4CD964', '#007AFF', '#5856D6'];
 

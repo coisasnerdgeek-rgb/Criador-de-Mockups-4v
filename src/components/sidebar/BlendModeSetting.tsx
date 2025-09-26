@@ -1,5 +1,5 @@
 import React from 'react';
-import { SavedClothing } from '../../types';
+import { SavedClothing } from '../../types'; // Corrected import path
 import { LayersIcon } from '../Icons';
 
 interface BlendModeSettingProps {
