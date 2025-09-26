@@ -4,7 +4,7 @@ import {
     Sparkles, Download, Image, Check, History, Palette, User, Users, Upload, Archive,
     Move, ZoomIn, Layers, Images, PenTool, ListTodo, Settings, Bookmark, PlusCircle,
     MinusCircle, RotateCcw, Shirt, CreditCard, Tag, Undo2, Share, Import, Sun, Moon,
-    Redo2, FileImage, Resize, RotateCw, ChevronLeft, ChevronRight, ZoomOut, Lightbulb,
+    Redo2, FileImage, Scale, RotateCw, ChevronLeft, ChevronRight, ZoomOut, Lightbulb,
     ImageOff, UserRound
 } from 'lucide-react';
 
@@ -199,7 +199,7 @@ export const JpgIcon: React.FC<{className?: string}> = ({className = "h-5 w-5"})
 );
 
 export const ResizeIcon: React.FC<{className?: string}> = ({className = "h-3 w-3 text-white"}) => (
-    <Resize className={className} />
+    <Scale className={className} />
 );
 
 export const RotateIcon: React.FC<{className?: string}> = ({className = "h-4 w-4 text-white"}) => (
