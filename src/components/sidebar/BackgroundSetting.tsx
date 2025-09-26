@@ -1,7 +1,7 @@
 import React from 'react';
-import { ImageUploader } from '../ImageUploader'; // Corrected import path
-import { PromptSettings } from '../../types'; // Corrected import path
-import { ImageIcon, PlusCircleIcon, NoBackgroundIcon } from '../Icons';
+import { ImageUploader } from '@/components/ImageUploader';
+import { PromptSettings } from '@/types';
+import { ImageIcon, PlusCircleIcon, NoBackgroundIcon } from '@/components/Icons';
 
 interface BackgroundSettingProps {
     backgroundTheme: string;

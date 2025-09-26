@@ -1,6 +1,6 @@
 import React from 'react';
-import { GenerationType } from '../../types'; // Corrected import path
-import { PersonIcon, PosesIcon, UsersIcon } from '../Icons';
+import { GenerationType } from '@/types';
+import { PersonIcon, PosesIcon, UsersIcon } from '@/components/Icons';
 
 interface GenerationTypeSettingProps {
     generationType: GenerationType;

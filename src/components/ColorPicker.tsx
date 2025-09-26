@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { CheckIcon, OriginalColorIcon, MagicWandIcon, LoadingSpinner } from './Icons';
-import { ColorPalette } from '../types'; // Corrected import path
+import { ColorPalette } from '@/types'; // Fixed import path
 
 const presetColors = [
     // Neutrals
