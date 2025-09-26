@@ -302,8 +302,8 @@ export interface CreatorPageProps {
     setIsHistoryModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
     generatedImageUrls: string[];
     setGeneratedImageUrls: React.Dispatch<React.SetStateAction<string[]>>;
-    isRightSidebarOpen: boolean; // New prop
-    setIsRightSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>; // New prop
-    activeSettingTab: 'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'; // New prop
-    setActiveSettingTab: React.Dispatch<React.SetStateAction<'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'>>; // New prop
+    isRightSidebarOpen: boolean;
+    setIsRightSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    activeSettingTab: 'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background';
+    setActiveSettingTab: React.Dispatch<React.SetStateAction<'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'>>;
 }
