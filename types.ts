@@ -1,3 +1,5 @@
+import React from 'react';
+
 export interface Mask {
   x: number;
   y: number;
@@ -188,4 +190,116 @@ export interface InspirationItem {
 export interface ColorPalette {
     paletteName: string;
     colors: string[];
+}
+
+// --- Prop Interfaces for CreatorPage sections ---
+export interface CreatorPageClothingProps {
+    savedClothes: SavedClothing[];
+    selectedClothing: SavedClothing | null;
+    setSelectedClothing: React.Dispatch<React.SetStateAction<SavedClothing | null>>;
+    activeCategory: string;
+    setActiveCategory: React.Dispatch<React.SetStateAction<string>>;
+    clothingCategories: string[];
+    filteredClothes: SavedClothing[];
+    newClothingForm: NewClothingForm;
+    setNewClothingForm: React.Dispatch<React.SetStateAction<NewClothingForm>>;
+    newClothingFileState: NewClothingFileState;
+    handleNewClothingFileChange: (file: File, isBack: boolean) => Promise<void>;
+    handleClearNewClothingFile: (isBack: boolean) => void;
+    handleLoadFromUrl: (url: string, isBack: boolean) => Promise<void>;
+    activeNewClothingTab: 'saved' | 'new';
+    setActiveNewClothingTab: React.Dispatch<React.SetStateAction<'saved' | 'new'>>;
+    activeNewClothingInputTab: ActiveNewClothingInputTab;
+    setActiveNewClothingInputTab: React.Dispatch<React.SetStateAction<ActiveNewClothingInputTab>>;
+    editingClothingName: SavedClothing | null;
+    setEditingClothingName: React.Dispatch<React.SetStateAction<SavedClothing | null>>;
+    handleDeleteClothing: (id: string) => void;
+    handleAddBackImage: (clothing: SavedClothing) => void;
+    handleOpenMaskEditorForNew: (isBack: boolean) => Promise<void>;
+    handleOpenMaskEditorForEdit: (clothing: SavedClothing, isBack: boolean) => void;
+    setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+export interface CreatorPagePrintsProps {
+    savedPrints: Print[];
+    printsToShow: Print[];
+    selectedPrintId: string | null;
+    setSelectedPrintId: React.Dispatch<React.SetStateAction<string | null>>;
+    selectedPrintIdBack: string | null;
+    setSelectedPrintIdBack: React.Dispatch<React.SetStateAction<string | null>>;
+    printUploadError: string | null;
+    handlePrintFilesChange: (files: FileList) => Promise<void>;
+    handleDeletePrint: (id: string) => void;
+    handleRemovePrintBg: (printId: string) => Promise<void>;
+    isRemovingBackground: boolean;
+    selectedClothing: SavedClothing | null;
+    setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
+    selectedPrintFront: Print | undefined;
+}
+
+export interface CreatorPageGenerationProps {
+    generationType: GenerationType;
+    setGenerationType: React.Dispatch<React.SetStateAction<GenerationType>>;
+    generationAspectRatio: string;
+    setGenerationAspectRatio: React.Dispatch<React.SetStateAction<string>>;
+    generationMode: GenerationMode;
+    setGenerationMode: React.Dispatch<React.SetStateAction<GenerationMode>>;
+    selectedColor: string | null;
+    setSelectedColor: React.Dispatch<React.SetStateAction<string | null>>;
+    customColors: string[];
+    handleAddCustomColor: (color: string) => void;
+    blendMode: string;
+    setBlendMode: React.Dispatch<React.SetStateAction<string>>;
+    backgroundTheme: string;
+    setBackgroundTheme: React.Dispatch<React.SetStateAction<string>>;
+    customBackgroundFile: File | null;
+    setCustomBackgroundFile: React.Dispatch<React.SetStateAction<File | null>>;
+    selectedPoses: Pose[];
+    handlePoseSelection: (pose: Pose) => void;
+    modelFilter: ModelFilter;
+    setModelFilter: React.Dispatch<React.SetStateAction<ModelFilter>>;
+    promptSettings: PromptSettings;
+    customBgState: { isLoading: boolean; error: string | null; };
+    handleCustomBackgroundFileChange: (file: File) => Promise<void>;
+    selectedClothing: SavedClothing | null;
+    handleGenerateBackground: () => Promise<void>;
+    isGeneratingBackground: boolean;
+    handleRevertBackground: () => void;
+    handleSuggestColors: () => Promise<void>;
+    isSuggestingColors: boolean;
+    suggestedPalettes: ColorPalette[] | null;
+}
+
+export interface CreatorPageActionsProps {
+    isLoading: boolean;
+    isBatchingPreviews: boolean;
+    error: string | null;
+    handleGenerate: () => Promise<void>;
+    handleGenerateAssociationsBatch: () => Promise<void>;
+    canGenerate: boolean;
+    handleDownloadPreviewsAsZip: () => Promise<void>;
+    isZippingPreview: boolean;
+}
+
+export interface CreatorPageUIProps {
+    precompositePreviewUrl: string | null;
+    precompositePreviewUrlBack: string | null;
+    precompositePreviewUrlBefore: string | null;
+    setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
+    handleOpenMaskEditorForEdit: (clothing: SavedClothing, isBack: boolean) => void;
+    handleDownloadPreview: (url: string | null, side: 'frente' | 'costas') => void;
+    handleSavePreviewToHistory: (side: 'front' | 'back') => void;
+}
+
+export interface CreatorPageProps {
+    clothingProps: CreatorPageClothingProps;
+    printsProps: CreatorPagePrintsProps;
+    generationProps: CreatorPageGenerationProps;
+    actionsProps: CreatorPageActionsProps;
+    uiProps: CreatorPageUIProps;
+    generationHistory: HistoryItem[];
+    handleRestoreHistoryItem: (item: HistoryItem) => void;
+    setIsHistoryModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    generatedImageUrls: string[];
+    setGeneratedImageUrls: React.Dispatch<React.SetStateAction<string[]>>;
 }

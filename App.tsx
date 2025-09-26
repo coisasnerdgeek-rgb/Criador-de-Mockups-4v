@@ -18,7 +18,7 @@ import { supabase } from './src/integrations/supabase/client';
 import { LogoIcon, SunIcon, MoonIcon, CreatorIcon, SparklesIcon, UsersIcon, GalleryIcon, SettingsIcon, MagicWandIcon, LightbulbIcon } from './components/Icons';
 
 // Page Components
-import { CreatorPage, CreatorPageProps } from './components/CreatorPage';
+import { CreatorPage } from './components/CreatorPage';
 import { GalleryPage } from './components/GalleryPage';
 import { AssociationsPage } from './components/AssociationsPage';
 import { SettingsPage } from './components/SettingsPage';
@@ -39,7 +39,8 @@ import {
     SavedClothing, Print, HistoryItem, SavedMask, SavedImagePrompt, TreatmentHistoryItem, Mask,
     GenerationType, GenerationMode, Pose, ActivePage, ModelFilter, ClothingToMask, ClothingToEdit,
     NewClothingFileState, ActiveNewClothingInputTab, ImportStatus, PromptSettings, MockupPrompts,
-    NewClothingForm, BatchGenerationStatus, InspirationSettings, ColorPalette, PrintCombination
+    NewClothingForm, BatchGenerationStatus, InspirationSettings, ColorPalette, PrintCombination,
+    CreatorPageProps // Import CreatorPageProps from types.ts
 } from './types';
 
 

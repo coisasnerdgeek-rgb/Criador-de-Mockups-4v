@@ -11,7 +11,8 @@ import { PrintItemCard } from './PrintItemCard';
 import { 
     SavedClothing, Print, Mask, HistoryItem, GenerationType, GenerationMode, Pose, ModelFilter, 
     PromptSettings, NewClothingFileState, ActiveNewClothingInputTab, NewClothingForm, ColorPalette,
-    ImageDimensions, ImageRect // Import new types
+    ImageDimensions, ImageRect, // Import new types
+    CreatorPageClothingProps, CreatorPagePrintsProps, CreatorPageGenerationProps, CreatorPageActionsProps, CreatorPageUIProps, CreatorPageProps // Import prop interfaces
 } from '../types';
 import { 
     LoadingSpinner, TrashIcon, PencilIcon, MagicWandIcon, DownloadIcon, ImageIcon, HistoryIcon, 
@@ -139,119 +140,6 @@ const MaskOverlay: React.FC<{ mask: Mask | null; imageRect: ImageRect | null }> 
 
     return <div style={maskStyle} aria-hidden="true" />;
 };
-
-// --- Prop Interfaces for CreatorPage sections ---
-export interface CreatorPageClothingProps {
-    savedClothes: SavedClothing[];
-    selectedClothing: SavedClothing | null;
-    setSelectedClothing: React.Dispatch<React.SetStateAction<SavedClothing | null>>;
-    activeCategory: string;
-    setActiveCategory: React.Dispatch<React.SetStateAction<string>>;
-    clothingCategories: string[];
-    filteredClothes: SavedClothing[];
-    newClothingForm: NewClothingForm;
-    setNewClothingForm: React.Dispatch<React.SetStateAction<NewClothingForm>>;
-    newClothingFileState: NewClothingFileState;
-    handleNewClothingFileChange: (file: File, isBack: boolean) => Promise<void>;
-    handleClearNewClothingFile: (isBack: boolean) => void;
-    handleLoadFromUrl: (url: string, isBack: boolean) => Promise<void>;
-    activeNewClothingTab: 'saved' | 'new';
-    setActiveNewClothingTab: React.Dispatch<React.SetStateAction<'saved' | 'new'>>;
-    activeNewClothingInputTab: ActiveNewClothingInputTab;
-    setActiveNewClothingInputTab: React.Dispatch<React.SetStateAction<ActiveNewClothingInputTab>>;
-    editingClothingName: SavedClothing | null;
-    setEditingClothingName: React.Dispatch<React.SetStateAction<SavedClothing | null>>;
-    handleDeleteClothing: (id: string) => void;
-    handleAddBackImage: (clothing: SavedClothing) => void;
-    handleOpenMaskEditorForNew: (isBack: boolean) => Promise<void>;
-    handleOpenMaskEditorForEdit: (clothing: SavedClothing, isBack: boolean) => void;
-    setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
-}
-
-export interface CreatorPagePrintsProps {
-    savedPrints: Print[];
-    printsToShow: Print[];
-    selectedPrintId: string | null;
-    setSelectedPrintId: React.Dispatch<React.SetStateAction<string | null>>;
-    selectedPrintIdBack: string | null;
-    setSelectedPrintIdBack: React.Dispatch<React.SetStateAction<string | null>>;
-    printUploadError: string | null;
-    handlePrintFilesChange: (files: FileList) => Promise<void>;
-    handleDeletePrint: (id: string) => void;
-    handleRemovePrintBg: (printId: string) => Promise<void>;
-    isRemovingBackground: boolean;
-    selectedClothing: SavedClothing | null;
-    setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
-    selectedPrintFront: Print | undefined;
-}
-
-export interface CreatorPageGenerationProps {
-    generationType: GenerationType;
-    setGenerationType: React.Dispatch<React.SetStateAction<GenerationType>>;
-    generationAspectRatio: string;
-    setGenerationAspectRatio: React.Dispatch<React.SetStateAction<string>>;
-    generationMode: GenerationMode;
-    setGenerationMode: React.SetStateAction<GenerationMode>;
-    selectedColor: string | null;
-    setSelectedColor: React.Dispatch<React.SetStateAction<string | null>>;
-    customColors: string[];
-    handleAddCustomColor: (color: string) => void;
-    blendMode: string;
-    setBlendMode: React.SetStateAction<string>; // Changed to React.SetStateAction
-    backgroundTheme: string;
-    setBackgroundTheme: React.SetStateAction<string>; // Changed to React.SetStateAction
-    customBackgroundFile: File | null;
-    setCustomBackgroundFile: React.SetStateAction<File | null>; // Changed to React.SetStateAction
-    selectedPoses: Pose[];
-    handlePoseSelection: (pose: Pose) => void;
-    modelFilter: ModelFilter;
-    setModelFilter: React.Dispatch<React.SetStateAction<ModelFilter>>;
-    promptSettings: PromptSettings;
-    customBgState: { isLoading: boolean; error: string | null; };
-    handleCustomBackgroundFileChange: (file: File) => Promise<void>;
-    selectedClothing: SavedClothing | null;
-    handleGenerateBackground: () => Promise<void>;
-    isGeneratingBackground: boolean;
-    handleRevertBackground: () => void;
-    handleSuggestColors: () => Promise<void>;
-    isSuggestingColors: boolean;
-    suggestedPalettes: ColorPalette[] | null;
-}
-
-export interface CreatorPageActionsProps {
-    isLoading: boolean;
-    isBatchingPreviews: boolean;
-    error: string | null;
-    handleGenerate: () => Promise<void>;
-    handleGenerateAssociationsBatch: () => Promise<void>;
-    canGenerate: boolean;
-    handleDownloadPreviewsAsZip: () => Promise<void>;
-    isZippingPreview: boolean;
-}
-
-export interface CreatorPageUIProps {
-    precompositePreviewUrl: string | null;
-    precompositePreviewUrlBack: string | null;
-    precompositePreviewUrlBefore: string | null;
-    setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
-    handleOpenMaskEditorForEdit: (clothing: SavedClothing, isBack: boolean) => void;
-    handleDownloadPreview: (url: string | null, side: 'frente' | 'costas') => void;
-    handleSavePreviewToHistory: (side: 'front' | 'back') => void;
-}
-
-export interface CreatorPageProps {
-    clothingProps: CreatorPageClothingProps;
-    printsProps: CreatorPagePrintsProps;
-    generationProps: CreatorPageGenerationProps;
-    actionsProps: CreatorPageActionsProps;
-    uiProps: CreatorPageUIProps;
-    generationHistory: HistoryItem[];
-    handleRestoreHistoryItem: (item: HistoryItem) => void;
-    setIsHistoryModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    generatedImageUrls: string[];
-    setGeneratedImageUrls: React.Dispatch<React.SetStateAction<string[]>>;
-}
-// --- End Prop Interfaces ---
 
 
 const CreatorClothingSection = memo((props: CreatorPageClothingProps) => {
@@ -444,7 +332,7 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     return (
         <div className="relative flex flex-col h-full">
             {/* Main content area */}
-            <div className={`transition-all duration-300 ease-in-out flex-grow ${isSidebarOpen ? 'xl:ml-[19rem]' : 'xl:ml-[3rem]'} flex flex-col`}>
+            <div className={`transition-all duration-300 ease-in-out flex-grow ${isSidebarOpen ? 'xl:ml-64' : 'xl:ml-12'} flex flex-col`}>
                 <div className={`grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 flex-grow`}> {/* Always 3 columns on xl, adjusted for sidebar width */}
                     {/* Column 1: Estampa */}
                     <div className="flex flex-col">
@@ -531,78 +419,82 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                 </div>
             </div>
 
-            {/* Fixed Icon Menu (w-12) */}
-            <div className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-12 bg-gray-200 dark:bg-gray-900/50 p-2 flex flex-col items-center justify-between z-40 shadow-lg">
-                <div className="space-y-2 w-full">
-                    <button 
-                        onClick={() => setActiveSettingTab('generationType')} 
-                        className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'generationType' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                        title="Tipo de Geração"
-                    >
-                        <PersonIcon className="h-5 w-5" />
-                        <span className="text-xs">Tipo</span>
-                    </button>
-                    <button 
-                        onClick={() => setActiveSettingTab('aspectRatio')} 
-                        className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'aspectRatio' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                        title="Proporção da Imagem"
-                    >
-                        <AspectRatioOneOneIcon className="h-5 w-5" />
-                        <span className="text-xs">Proporção</span>
-                    </button>
-                    <button 
-                        onClick={() => setActiveSettingTab('generationMode')} 
-                        className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'generationMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                        title="Lados para Gerar"
-                    >
-                        <PosesIcon className="h-5 w-5" />
-                        <span className="text-xs">Lados</span>
-                    </button>
-                    <button 
-                        onClick={() => setActiveSettingTab('color')} 
-                        className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'color' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                        title="Cor da Roupa"
-                    >
-                        <PaletteIcon className="h-5 w-5" />
-                        <span className="text-xs">Cor</span>
-                    </button>
-                    <button 
-                        onClick={() => setActiveSettingTab('blendMode')} 
-                        className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'blendMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                        title="Modo de Mesclagem"
-                    >
-                        <LayersIcon className="h-5 w-5" />
-                        <span className="text-xs">Mesclagem</span>
-                    </button>
-                    <button 
-                        onClick={() => setActiveSettingTab('background')} 
-                        className={`w-full p-2 rounded-md text-sm flex flex-col items-center gap-1 ${activeSettingTab === 'background' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                        title="Fundo"
-                    >
-                        <ImageIcon className="h-5 w-5" />
-                        <span className="text-xs">Fundo</span>
-                    </button>
-                </div>
-            </div>
+            {/* Unified Sliding Sidebar */}
+            <div className={`fixed top-16 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-all duration-300 ease-in-out ${isSidebarOpen ? 'left-0 w-64' : 'left-0 w-12'}`}>
+                <div className="flex flex-col h-full">
+                    {/* Icon Menu / Expanded Settings */}
+                    <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900 p-2">
+                        <div className="space-y-2 w-full">
+                            <button 
+                                onClick={() => { setActiveSettingTab('generationType'); setIsSidebarOpen(true); }} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activeSettingTab === 'generationType' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                                title="Tipo de Geração"
+                            >
+                                <PersonIcon className="h-5 w-5 flex-shrink-0" />
+                                {isSidebarOpen && <span className="text-sm">Tipo de Geração</span>}
+                            </button>
+                            <button 
+                                onClick={() => { setActiveSettingTab('aspectRatio'); setIsSidebarOpen(true); }} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activeSettingTab === 'aspectRatio' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                                title="Proporção da Imagem"
+                            >
+                                <AspectRatioOneOneIcon className="h-5 w-5 flex-shrink-0" />
+                                {isSidebarOpen && <span className="text-sm">Proporção</span>}
+                            </button>
+                            <button 
+                                onClick={() => { setActiveSettingTab('generationMode'); setIsSidebarOpen(true); }} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activeSettingTab === 'generationMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                                title="Lados para Gerar"
+                            >
+                                <PosesIcon className="h-5 w-5 flex-shrink-0" />
+                                {isSidebarOpen && <span className="text-sm">Lados</span>}
+                            </button>
+                            <button 
+                                onClick={() => { setActiveSettingTab('color'); setIsSidebarOpen(true); }} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activeSettingTab === 'color' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                                title="Cor da Roupa"
+                            >
+                                <PaletteIcon className="h-5 w-5 flex-shrink-0" />
+                                {isSidebarOpen && <span className="text-sm">Cor da Roupa</span>}
+                            </button>
+                            <button 
+                                onClick={() => { setActiveSettingTab('blendMode'); setIsSidebarOpen(true); }} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activeSettingTab === 'blendMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                                title="Modo de Mesclagem"
+                            >
+                                <LayersIcon className="h-5 w-5 flex-shrink-0" />
+                                {isSidebarOpen && <span className="text-sm">Modo de Mesclagem</span>}
+                            </button>
+                            <button 
+                                onClick={() => { setActiveSettingTab('background'); setIsSidebarOpen(true); }} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activeSettingTab === 'background' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                                title="Fundo"
+                            >
+                                <ImageIcon className="h-5 w-5 flex-shrink-0" />
+                                {isSidebarOpen && <span className="text-sm">Fundo</span>}
+                            </button>
+                        </div>
 
-            {/* Sliding Detailed Settings Panel (w-64) */}
-            <div className={`fixed top-16 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-transform duration-300 ease-in-out w-64 ${isSidebarOpen ? 'left-12' : 'left-[-16rem]'}`}>
-                <div className="flex-grow w-64 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900 flex flex-col justify-between">
-                    {/* Área de conteúdo para as configurações ativas */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg space-y-4 flex-grow">
-                        {renderSettingContent()}
+                        {isSidebarOpen && (
+                            <div className="mt-4 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg space-y-4">
+                                {renderSettingContent()}
+                            </div>
+                        )}
                     </div>
+
                     {/* Ações de Geração fixas no rodapé */}
-                    <div className="mt-4">
-                        <GenerateActions {...actionsProps} />
-                    </div>
+                    {isSidebarOpen && (
+                        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                            <GenerateActions {...actionsProps} />
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Sidebar Toggle Button (fixed and always visible) */}
             <button 
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className={`fixed top-1/2 -translate-y-1/2 z-40 p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-all duration-300 ${isSidebarOpen ? 'left-[19rem]' : 'left-[3rem]'}`}
+                className={`fixed top-1/2 -translate-y-1/2 z-40 p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-all duration-300 ${isSidebarOpen ? 'left-64' : 'left-12'}`}
                 title={isSidebarOpen ? "Esconder Painel de IA" : "Mostrar Painel de IA"}
             >
                 {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
