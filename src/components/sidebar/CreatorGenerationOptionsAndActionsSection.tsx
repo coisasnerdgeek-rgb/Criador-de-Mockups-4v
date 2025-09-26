@@ -1,8 +1,8 @@
 import React from 'react';
-import { LoadingSpinner, MagicWandIcon, ZipIcon, PersonIcon, PosesIcon, UsersIcon, AspectRatioOneOneIcon, AspectRatioThreeFourIcon, AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, PaletteIcon, LayersIcon, ImageIcon } from '../Icons';
-import { GenerationType, GenerationMode, Pose, ModelFilter, PromptSettings, ColorPalette, Print, SavedClothing } from '../../types'; // Corrected import path
-import { ColorPicker } from '../ColorPicker';
-import { ImageUploader } from '../ImageUploader'; // Corrected import path
+import { LoadingSpinner, MagicWandIcon, ZipIcon, PersonIcon, PosesIcon, UsersIcon, AspectRatioOneOneIcon, AspectRatioThreeFourIcon, AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, PaletteIcon, LayersIcon, ImageIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/Icons';
+import { GenerationType, GenerationMode, Pose, ModelFilter, PromptSettings, ColorPalette, Print, SavedClothing } from '@/types';
+import { ColorPicker } from '@/components/ColorPicker';
+import { ImageUploader } from '@/components/ImageUploader';
 
 interface CreatorGenerationOptionsAndActionsSectionProps {
     generationProps: {
@@ -48,8 +48,10 @@ interface CreatorGenerationOptionsAndActionsSectionProps {
     printsProps: {
         selectedPrintFront: Print | undefined;
     };
-    activeSettingTab: 'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'; // Removed 'generateActions'
+    activeSettingTab: 'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background';
 }
+
+const blendModes = ['Normal', 'Multiply', 'Screen', 'Overlay'];
 
 export const CreatorGenerationOptionsAndActionsSection: React.FC<CreatorGenerationOptionsAndActionsSectionProps> = ({
     generationProps,
@@ -234,175 +236,10 @@ export const CreatorGenerationOptionsAndActionsSection: React.FC<CreatorGenerati
     };
 
     return (
-        <div className="relative flex flex-col h-full">
-            {/* Main content area */}
-            <div className={`transition-all duration-300 ease-in-out flex-grow ${isSidebarOpen ? 'xl:ml-64' : 'xl:ml-12'} flex flex-col`}>
-                <div className={`grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 flex-grow`}> {/* Always 3 columns on xl, adjusted for sidebar width */}
-                    {/* Column 1: Estampa */}
-                    <div className="flex flex-col">
-                        <CreatorPrintSection 
-                            {...printsProps} 
-                            onAddPrintClick={handleAddPrintClick}
-                            onPrintDrop={handlePrintDrop}
-                            onPrintDragOver={handlePrintDragOver}
-                            onPrintDragLeave={handlePrintDragLeave}
-                            isDraggingPrint={isDraggingPrint}
-                        />
-                    </div>
-
-                    {/* Column 2: Inserir Roupas */}
-                    <div className="flex flex-col">
-                        <CreatorClothingSection {...clothingProps} />
-                    </div>
-
-                    {/* Column 3: Frente & Costas */}
-                    <div className="flex flex-col gap-6">
-                        {/* Frente */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex-grow flex flex-col">
-                            <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2 flex-grow">
-                                {precompositePreviewUrl ? (
-                                    precompositePreviewUrlBefore ? (
-                                        <ImageCompareSlider beforeSrc={precompositePreviewUrlBefore} afterSrc={precompositePreviewUrl} alt="Comparação com/sem fundo" />
-                                    ) : (
-                                        <ZoomableImage src={precompositePreviewUrl} alt="Pré-visualização da Frente" />
-                                    )
-                                ) : (
-                                    <div className="text-center text-gray-500">
-                                        <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
-                                        <p>Pré-visualização da Frente</p>
-                                    </div>
-                                )}
-                                <PreviewToolbar
-                                    selectedClothing={selectedClothing}
-                                    handleRevertBackground={generationProps.handleRevertBackground}
-                                    handleDownloadPreview={uiProps.handleDownloadPreview}
-                                    precompositePreviewUrl={precompositePreviewUrl}
-                                    handleSavePreviewToHistory={uiProps.handleSavePreviewToHistory}
-                                    handleOpenMaskEditorForEdit={uiProps.handleOpenMaskEditorForEdit}
-                                    handleAddBackImage={clothingProps.handleAddBackImage}
-                                    isBackPreview={false} // Indicate this is the front preview
-                                />
-                                {/* Title inside the card */}
-                                <div className="absolute top-2 left-2 bg-black/60 text-white text-sm font-bold px-2 py-1 rounded-md">Frente</div>
-                            </div>
-                        </div>
-
-                        {/* Costas */}
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex-grow flex flex-col">
-                            <div className="relative group aspect-square bg-gray-900/50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700 p-2 flex-grow">
-                                {precompositePreviewUrlBack ? <ZoomableImage src={precompositePreviewUrlBack} alt="Pré-visualização das Costas" /> : (
-                                    <div className="text-center text-gray-500">
-                                        <ImageIcon className="h-12 w-12 mx-auto mb-2"/>
-                                        <p>Pré-visualização das Costas</p>
-                                        <span className="text-xs">(Adicione uma imagem de costas à roupa)</span>
-                                    </div>
-                                )}
-                                {selectedClothing?.base64Back && (
-                                    <PreviewToolbar
-                                        selectedClothing={selectedClothing}
-                                        handleRevertBackground={generationProps.handleRevertBackground}
-                                        handleDownloadPreview={uiProps.handleDownloadPreview}
-                                        precompositePreviewUrl={precompositePreviewUrlBack} // Use back preview URL
-                                        handleSavePreviewToHistory={uiProps.handleSavePreviewToHistory}
-                                        handleOpenMaskEditorForEdit={uiProps.handleOpenMaskEditorForEdit}
-                                        handleAddBackImage={clothingProps.handleAddBackImage}
-                                        isBackPreview={true} // Indicate this is the back preview
-                                    />
-                                )}
-                                {/* Title inside the card */}
-                                <div className="absolute top-2 left-2 bg-black/60 text-white text-sm font-bold px-2 py-1 rounded-md">Costas</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/* History Timeline abaixo das 4 colunas */}
-                <div className="mt-6">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg">
-                        <HistoryTimeline history={generationHistory} onRestore={handleRestoreHistoryItem} onViewAll={() => setIsHistoryModalOpen(true)} />
-                    </div>
-                </div>
+        <div className="flex-grow w-80 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg space-y-4 flex-grow">
+                {renderSettingContent()}
             </div>
-
-            {/* Unified Sliding Sidebar */}
-            <div className={`fixed top-16 h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-800 shadow-2xl z-30 transform transition-all duration-300 ease-in-out ${isSidebarOpen ? 'left-0 w-64' : 'left-0 w-12'}`}>
-                <div className="flex flex-col h-full">
-                    {/* Icon Menu / Expanded Settings */}
-                    <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900 p-2">
-                        <div className="space-y-2 w-full">
-                            <button 
-                                onClick={() => { setActiveSettingTab('generationType'); setIsSidebarOpen(true); }} 
-                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activeSettingTab === 'generationType' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Tipo de Geração"
-                            >
-                                <PersonIcon className="h-5 w-5 flex-shrink-0" />
-                                {isSidebarOpen && <span className="text-sm">Tipo de Geração</span>}
-                            </button>
-                            <button 
-                                onClick={() => { setActiveSettingTab('aspectRatio'); setIsSidebarOpen(true); }} 
-                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activeSettingTab === 'aspectRatio' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Proporção da Imagem"
-                            >
-                                <AspectRatioOneOneIcon className="h-5 w-5 flex-shrink-0" />
-                                {isSidebarOpen && <span className="text-sm">Proporção</span>}
-                            </button>
-                            <button 
-                                onClick={() => { setActiveSettingTab('generationMode'); setIsSidebarOpen(true); }} 
-                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activeSettingTab === 'generationMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Lados para Gerar"
-                            >
-                                <PosesIcon className="h-5 w-5 flex-shrink-0" />
-                                {isSidebarOpen && <span className="text-sm">Lados</span>}
-                            </button>
-                            <button 
-                                onClick={() => { setActiveSettingTab('color'); setIsSidebarOpen(true); }} 
-                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activeSettingTab === 'color' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Cor da Roupa"
-                            >
-                                <PaletteIcon className="h-5 w-5 flex-shrink-0" />
-                                {isSidebarOpen && <span className="text-sm">Cor da Roupa</span>}
-                            </button>
-                            <button 
-                                onClick={() => { setActiveSettingTab('blendMode'); setIsSidebarOpen(true); }} 
-                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activeSettingTab === 'blendMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Modo de Mesclagem"
-                            >
-                                <LayersIcon className="h-5 w-5 flex-shrink-0" />
-                                {isSidebarOpen && <span className="text-sm">Modo de Mesclagem</span>}
-                            </button>
-                            <button 
-                                onClick={() => { setActiveSettingTab('background'); setIsSidebarOpen(true); }} 
-                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activeSettingTab === 'background' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                                title="Fundo"
-                            >
-                                <ImageIcon className="h-5 w-5 flex-shrink-0" />
-                                {isSidebarOpen && <span className="text-sm">Fundo</span>}
-                            </button>
-                        </div>
-
-                        {isSidebarOpen && (
-                            <div className="mt-4 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg space-y-4">
-                                {renderSettingContent()}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Ações de Geração fixas no rodapé */}
-                    {isSidebarOpen && (
-                        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                            <GenerateActions {...actionsProps} />
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Sidebar Toggle Button (fixed and always visible) */}
-            <button 
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className={`fixed top-1/2 -translate-y-1/2 z-40 p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-all duration-300 ${isSidebarOpen ? 'left-64' : 'left-12'}`}
-                title={isSidebarOpen ? "Esconder Painel de IA" : "Mostrar Painel de IA"}
-            >
-                {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-            </button>
         </div>
     );
 };
