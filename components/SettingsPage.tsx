@@ -156,7 +156,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                                                 autoFocus
                                             />
                                             <button onClick={handleUpdateCategory} className="p-2 text-green-500 dark:text-green-400 hover:text-green-600 dark:hover:text-green-300"><CheckIcon /></button>
-                                            <button onClick={() => setEditingCategory(null)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">&times;</button>
+                                            <button onClick={() => setEditingCategory(null)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"><XIcon className="h-5 w-5" /></button> {/* Changed to XIcon */}
                                         </>
                                     ) : (
                                         <>

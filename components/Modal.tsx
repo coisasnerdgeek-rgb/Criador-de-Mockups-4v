@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { XIcon } from './Icons'; // Added XIcon
 
 interface ModalProps {
   children: React.ReactNode;
@@ -22,9 +22,7 @@ export const Modal: React.FC<ModalProps> = ({ children, onClose, title }) => {
             className="text-gray-400 hover:text-white transition-colors"
             aria-label="Close modal"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <XIcon className="h-6 w-6" /> {/* Changed to XIcon */}
           </button>
         </header>
         <main className="p-6 overflow-y-auto">

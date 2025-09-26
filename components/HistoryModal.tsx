@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Modal } from './Modal';
 import { HistoryItem } from '../types';
-import { TrashIcon } from './Icons';
+import { TrashIcon, XIcon } from './Icons'; // Added XIcon
 
 
 interface HistoryModalProps {

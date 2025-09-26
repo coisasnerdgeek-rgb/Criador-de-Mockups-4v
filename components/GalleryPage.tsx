@@ -1,9 +1,8 @@
-
 import React, { useState, useCallback, useMemo, memo } from 'react';
 import { HistoryItem } from '../types';
 import { Modal } from './Modal';
 import { ZoomableImage } from './ZoomableImage';
-import { DownloadIcon, GalleryIcon, TrashIcon } from './Icons';
+import { DownloadIcon, GalleryIcon, TrashIcon, XIcon } from './Icons'; // Added XIcon
 
 // --- Gallery Page Optimization ---
 const GalleryItemCard = memo<{ item: HistoryItem, onSelect: (item: HistoryItem) => void }>(({ item, onSelect }) => {
@@ -31,7 +30,7 @@ const GalleryModalImage = memo<{ img: string, name: string, index: number }>(({ 
     return (
         <div className="relative group aspect-square">
             <ZoomableImage src={img} alt={`Imagem ${index + 1}`} />
-            <a href={img} download={downloadName} className="absolute bottom-2 right-2 bg-cyan-600 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" title={`Baixar ${downloadName}`}>
+            <a href={img} download={downloadName} className="absolute bottom-2 right-2 bg-cyan-600 p-2 rounded-full opacity-0 group-hover:opacity-100 hover:bg-cyan-400" title={`Baixar ${downloadName}`}>
                 <DownloadIcon />
             </a>
         </div>

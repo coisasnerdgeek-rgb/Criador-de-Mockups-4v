@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState, useRef } from 'react';
 import { UploadIcon, LoadingSpinner, RedoIcon, TrashIcon } from './Icons';
 

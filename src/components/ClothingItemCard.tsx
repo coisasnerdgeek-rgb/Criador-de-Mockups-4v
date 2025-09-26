@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { SavedClothing } from '@/types';
-import { PencilIcon, TrashIcon, PositionIcon, PlusCircleIcon } from '@/components/Icons';
+import { PencilIcon, TrashIcon, PositionIcon, PlusCircleIcon, Maximize } from '@/components/Icons'; // Added Maximize
 
 interface ClothingItemCardProps {
     clothing: SavedClothing;
@@ -43,7 +43,7 @@ export const ClothingItemCard = memo(({
                     className="bg-cyan-600 text-white p-2 rounded-full shadow-lg hover:bg-cyan-500 transition-all"
                     title="Ver em tamanho real"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5" /></svg>
+                    <Maximize className="h-5 w-5" /> {/* Changed to Maximize */}
                 </button>
                 <div className="flex gap-2">
                     <button 

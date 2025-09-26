@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect, memo } from 'react';
 import { Print, SavedImagePrompt, TreatmentHistoryItem } from '../types';
 import { editImage } from '../services/geminiService';
-import { SparklesIcon, UploadIcon, LoadingSpinner, PencilIcon, TrashIcon, CheckIcon, DownloadIcon, RevertIcon, BookmarkIcon, MagicWandIcon, ImageIcon, PlusCircleIcon, HistoryIcon, AspectRatioOneOneIcon, AspectRatioThreeFourIcon, AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon } from './Icons';
+import { SparklesIcon, UploadIcon, LoadingSpinner, PencilIcon, TrashIcon, CheckIcon, DownloadIcon, RevertIcon, BookmarkIcon, MagicWandIcon, ImageIcon, PlusCircleIcon, HistoryIcon, AspectRatioOneOneIcon, AspectRatioThreeFourIcon, AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, XIcon } from './Icons'; // Added XIcon
 import { ZoomableImage } from './ZoomableImage';
 import { ImageCompareSlider } from './ImageCompareSlider';
 import { fileToBase64, pngDataUrlToJpgDataUrl, processAndValidateImageFile, downloadDataUrlAsJpg, getImageDimensionsFromUrl } from '../utils/fileUtils';
@@ -266,8 +266,8 @@ const VisualComposer = memo(({ baseImageSrc, onDraftChange }: { baseImageSrc: st
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             updateDraft();
         }
-    }, [updateDraft]);
-    
+    }, [handleClear, updateDraft]); // Added handleClear to dependency array
+
     const colors = ['#FFFFFF', '#FF3B30', '#FF9500', '#FFCC00', '#4CD964', '#007AFF', '#5856D6'];
 
     return (
@@ -275,7 +275,7 @@ const VisualComposer = memo(({ baseImageSrc, onDraftChange }: { baseImageSrc: st
             <div className="flex items-center justify-between gap-2 p-2 bg-gray-900/50 rounded-md">
                 <div className="flex items-center gap-2">
                     <button onClick={() => setTool('brush')} className={`p-2 rounded ${tool === 'brush' ? 'bg-purple-600' : 'bg-gray-700'}`}><PencilIcon /></button>
-                    <button onClick={() => setTool('rectangle')} className={`p-2 rounded ${tool === 'rectangle' ? 'bg-purple-600' : 'bg-gray-700'}`}><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4h16v16H4z" /></svg></button>
+                    <button onClick={() => setTool('rectangle')} className={`p-2 rounded ${tool === 'rectangle' ? 'bg-purple-600' : 'bg-gray-700'}`}><Square className="h-5 w-5" /></button> {/* Changed to Square from lucide-react */}
                     <div className="h-6 w-px bg-gray-600"></div>
                      {colors.map(c => <button key={c} onClick={() => setColor(c)} className={`w-6 h-6 rounded-full border-2 ${color === c ? 'border-white' : 'border-transparent'}`} style={{ backgroundColor: c }} />)}
                      <input type="color" value={color} onChange={e => setColor(e.target.value)} className="w-8 h-8 p-0 border-none rounded-full cursor-pointer bg-transparent" style={{'--color': color} as React.CSSProperties} />

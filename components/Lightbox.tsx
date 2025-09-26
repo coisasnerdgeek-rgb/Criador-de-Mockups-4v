@@ -1,7 +1,6 @@
-
 import React, { useEffect } from 'react';
 import { downloadDataUrlAsJpg } from '../utils/fileUtils';
-import { DownloadIcon } from './Icons';
+import { DownloadIcon, XIcon } from './Icons'; // Added XIcon
 import { ZoomableImage } from './ZoomableImage';
 
 export const Lightbox: React.FC<{ src: string; onClose: () => void; }> = ({ src, onClose }) => {
@@ -36,7 +35,7 @@ export const Lightbox: React.FC<{ src: string; onClose: () => void; }> = ({ src,
                 className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors z-50 p-2 bg-black/30 rounded-full"
                 aria-label="Fechar"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                <XIcon className="h-6 w-6" /> {/* Changed to XIcon */}
             </button>
             <button
                 onClick={handleDownload}

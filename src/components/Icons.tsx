@@ -5,7 +5,7 @@ import {
     Move, ZoomIn, Layers, Images, PenTool, ListTodo, Settings, Bookmark, PlusCircle,
     MinusCircle, RotateCcw, Shirt, CreditCard, Tag, Undo2, Share, Import, Sun, Moon,
     Redo2, FileImage, Scale, RotateCw, ChevronLeft, ChevronRight, ZoomOut, Lightbulb,
-    ImageOff, UserRound
+    ImageOff, UserRound, X // Added X icon
 } from 'lucide-react';
 
 export const LogoIcon: React.FC<{className?: string}> = ({className = "text-cyan-400"}) => (
@@ -224,4 +224,8 @@ export const ZoomResetIcon: React.FC<{className?: string}> = ({className = "h-5 
 
 export const LightbulbIcon: React.FC<{ className?: string }> = ({ className = "h-5 w-5" }) => (
     <Lightbulb className={className} />
+);
+
+export const XIcon: React.FC<{ className?: string }> = ({ className = "h-6 w-6" }) => (
+    <X className={className} />
 );
