@@ -15,7 +15,7 @@ import { supabase } from './src/integrations/supabase/client';
 
 
 // Icons
-import { LogoIcon, SunIcon, MoonIcon, CreatorIcon, SparklesIcon, UsersIcon, GalleryIcon, SettingsIcon, MagicWandIcon, LightbulbIcon, ChevronLeftIcon, ChevronRightIcon, LayersIcon } from './components/Icons'; // FIX: Added LayersIcon
+import { LogoIcon, SunIcon, MoonIcon, CreatorIcon, SparklesIcon, UsersIcon, GalleryIcon, SettingsIcon, MagicWandIcon, LightbulbIcon, ChevronLeftIcon, ChevronRightIcon, LayersIcon } from './components/Icons';
 
 // Page Components
 import { CreatorPage } from './components/CreatorPage';
@@ -24,7 +24,7 @@ import { AssociationsPage } from './components/AssociationsPage';
 import { SettingsPage } from './components/SettingsPage';
 import { ImageTreatmentPage } from './components/ImageTreatmentPage';
 import { InspirationGalleryPage } from './components/InspirationGalleryPage';
-import { LeftNavigation } from './src/components/LeftNavigation'; // Import LeftNavigation
+import { LeftNavigation } from './src/components/LeftNavigation';
 
 // Common UI Components
 import { Lightbox } from './components/Lightbox';
@@ -33,8 +33,8 @@ import { MaskCreator } from './components/MaskCreator';
 import { EditClothingNameModal } from './components/EditClothingNameModal';
 import { HistoryModal } from './components/HistoryModal';
 import { ResultDisplay } from './components/ResultDisplay';
-import { GenerateActions } from './components/sidebar/GenerateActions'; // Import GenerateActions for right sidebar
-import { CreatorGenerationOptionsAndActionsSection } from './src/components/sidebar/CreatorGenerationOptionsAndActionsSection'; // FIX: Added import for CreatorGenerationOptionsAndActionsSection
+import { GenerateActions } from './components/sidebar/GenerateActions';
+import { CreatorGenerationOptionsAndActionsSection } from './src/components/sidebar/CreatorGenerationOptionsAndActionsSection';
 
 // Types and Constants
 import {
@@ -42,7 +42,7 @@ import {
     GenerationType, GenerationMode, Pose, ActivePage, ModelFilter, ClothingToMask, ClothingToEdit,
     NewClothingFileState, ActiveNewClothingInputTab, ImportStatus, PromptSettings, MockupPrompts,
     NewClothingForm, BatchGenerationStatus, InspirationSettings, ColorPalette, PrintCombination,
-    CreatorPageProps // Import CreatorPageProps from types.ts
+    CreatorPageProps
 } from './types';
 
 
@@ -142,10 +142,10 @@ const App: React.FC = () => {
   const [savedPrints, setSavedPrints] = useLocalStorage<Print[]>('ai-clothing-mockup-saved-prints', []);
   const [selectedPrintId, setSelectedPrintId] = useLocalStorage<string | null>('ai-clothing-mockup-selected-print-id', null);
   const [selectedPrintIdBack, setSelectedPrintIdBack] = useLocalStorage<string | null>('ai-clothing-mockup-selected-print-id-back', null);
-  const [savedMasks, setSavedMasks] = useState<SavedMask[]>([]); // Now managed by Supabase
+  const [savedMasks, setSavedMasks] = useState<SavedMask[]>([]);
   const [clothingCategories, setClothingCategories] = useLocalStorage<string[]>('ai-clothing-mockup-categories', initialClothingCategories);
   const [customColors, setCustomColors] = useLocalStorage<string[]>('ai-clothing-mockup-custom-colors', []);
-  const [savedImagePrompts, setSavedImagePrompts] = useState<SavedImagePrompt[]>([]); // Now managed by Supabase
+  const [savedImagePrompts, setSavedImagePrompts] = useState<SavedImagePrompt[]>([]);
   const [promptSettings, setPromptSettings] = useLocalStorage<PromptSettings>('ai-clothing-mockup-prompt-settings', defaultPromptSettings);
 
 
@@ -219,6 +219,10 @@ const App: React.FC = () => {
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true); // Start open for CreatorPage
   const [activeSettingTab, setActiveSettingTab] = useState<'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'>('generationType');
   
+  // State for print drag and drop in CreatorPage
+  const [isDraggingPrint, setIsDraggingPrint] = useState(false);
+  const printInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
@@ -1540,8 +1544,8 @@ const handleCancelBatchGeneration = () => {
                 clothingCategories,
                 promptSettings,
                 customColors,
-                savedMasks: cleanSavedMasks, // Use fetched masks
-                savedImagePrompts: cleanSavedImagePrompts, // Use fetched prompts
+                savedMasks: cleanSavedMasks,
+                savedImagePrompts: cleanSavedImagePrompts,
                 dataType: 'mockup-creator-backup',
                 version: '2.4-colocated'
             };
@@ -1753,7 +1757,6 @@ const handleCancelBatchGeneration = () => {
             localStorage.setItem('ai-clothing-mockup-categories', JSON.stringify(data.clothingCategories || initialClothingCategories));
             localStorage.setItem('ai-clothing-mockup-prompt-settings', JSON.stringify(data.promptSettings || defaultPromptSettings));
             localStorage.setItem('ai-clothing-mockup-custom-colors', JSON.stringify(data.customColors || []));
-            // localStorage.setItem('ai-clothing-mockup-saved-masks', JSON.stringify(data.savedMasks || [])); // No longer needed for local storage
             
             setImportStatus({ message: "Importação concluída com sucesso! Recarregando...", error: false, progress: 100 });
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -1813,6 +1816,32 @@ const handleCancelBatchGeneration = () => {
         setSavedClothes(prev => prev.map(c => c.id === clothingId ? { ...c, ...updates } : c));
     };
 
+    // --- Print Drag & Drop Handlers (moved from CreatorPage) ---
+    const handlePrintDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDraggingPrint(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            handlePrintFilesChange(e.dataTransfer.files);
+        }
+    }, [handlePrintFilesChange]);
+    
+    const handlePrintDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDraggingPrint(true);
+    }, []);
+
+    const handlePrintDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDraggingPrint(false);
+    }, []);
+
+    const handleAddPrintClick = useCallback(() => {
+        printInputRef.current?.click();
+    }, []);
+
 
     // --- Filtered Data ---
     const filteredClothes = useMemo(() => {
@@ -1869,7 +1898,12 @@ const handleCancelBatchGeneration = () => {
             isRemovingBackground,
             selectedClothing,
             setEnlargedImage,
-            selectedPrintFront, // Pass derived state down
+            selectedPrintFront,
+            onAddPrintClick: handleAddPrintClick, // Pass down
+            onPrintDrop: handlePrintDrop, // Pass down
+            onPrintDragOver: handlePrintDragOver, // Pass down
+            onPrintDragLeave: handlePrintDragLeave, // Pass down
+            isDraggingPrint: isDraggingPrint, // Pass down
         },
         generationProps: {
             generationType,
@@ -1927,10 +1961,6 @@ const handleCancelBatchGeneration = () => {
         setIsHistoryModalOpen,
         generatedImageUrls,
         setGeneratedImageUrls,
-        isRightSidebarOpen, // Pass right sidebar state
-        setIsRightSidebarOpen, // Pass right sidebar setter
-        activeSettingTab, // Pass active setting tab
-        setActiveSettingTab, // Pass active setting tab setter
     };
     
     const renderPage = () => {
@@ -1987,19 +2017,18 @@ const handleCancelBatchGeneration = () => {
     };
 
     const leftNavWidth = isLeftNavExpanded ? 'w-60' : 'w-16';
-    const rightSidebarWidth = isRightSidebarOpen ? 'w-80' : 'w-0';
+    const rightSidebarWidth = isRightSidebarOpen && activePage === 'creator' ? 'w-80' : 'w-0';
     const mainContentMarginLeft = isLeftNavExpanded ? 'ml-60' : 'ml-16';
     const mainContentMarginRight = isRightSidebarOpen && activePage === 'creator' ? 'mr-80' : 'mr-0';
 
 
     return (
-        <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans flex"> {/* Changed to flex */}
+        <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans flex">
             <LeftNavigation activePage={activePage} setActivePage={setActivePage} isExpanded={isLeftNavExpanded} setIsExpanded={setIsLeftNavExpanded} />
 
             <div className={`flex-grow transition-all duration-300 ease-in-out ${mainContentMarginLeft} ${mainContentMarginRight}`}>
                 <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-40 shadow-md h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-4">
-                        {/* Title can remain here or be moved */}
                         <h1 className="text-xl font-bold text-gray-800 dark:text-white">Criador de Mockups</h1>
                     </div>
                     <div className="flex items-center">
@@ -2018,7 +2047,7 @@ const handleCancelBatchGeneration = () => {
                     </div>
                 </header>
 
-                <main className="p-4 sm:p-6 lg:p-8 flex-grow"> {/* Removed container mx-auto */}
+                <main className="p-4 sm:p-6 lg:p-8 flex-grow">
                     {renderPage()}
                 </main>
             </div>
