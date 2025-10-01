@@ -1,5 +1,5 @@
 import React from 'react';
-import { GenerationType } from '../../types';
+import { GenerationType } from '@/types';
 import { PersonIcon, PosesIcon, UsersIcon } from '@/components/Icons';
 
 interface GenerationTypeSettingProps {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { GenerationMode, SavedClothing } from '../../types';
+import { GenerationMode, SavedClothing } from '@/types';
 import { LoadingSpinner } from '@/components/Icons';
 
 interface GenerationModeSettingProps {

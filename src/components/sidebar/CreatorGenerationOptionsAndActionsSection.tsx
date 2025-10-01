@@ -1,16 +1,15 @@
 import React from 'react';
-import { LoadingSpinner, MagicWandIcon, ZipIcon, PersonIcon, PosesIcon, UsersIcon, AspectRatioOneOneIcon, AspectRatioThreeFourIcon, AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, PaletteIcon, LayersIcon, ImageIcon } from '@/components/Icons';
-import { GenerationType, GenerationMode, Pose, ModelFilter, PromptSettings, ColorPalette, Print, SavedClothing } from '../../types';
+import { LoadingSpinner, MagicWandIcon, ZipIcon, PersonIcon, PosesIcon, UsersIcon, AspectRatioOneOneIcon, AspectRatioThreeFourIcon, AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, PaletteIcon, LayersIcon, ImageIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/Icons';
+import { GenerationType, GenerationMode, Pose, ModelFilter, PromptSettings, ColorPalette, Print, SavedClothing } from '@/types';
+import { ColorPicker } from '@/components/ColorPicker';
+import { ImageUploader } from '@/components/ImageUploader';
 import { GenerationTypeSetting } from './GenerationTypeSetting';
 import { AspectRatioSetting } from './AspectRatioSetting';
 import { GenerationModeSetting } from './GenerationModeSetting';
 import { ColorSetting } from './ColorSetting';
 import { BlendModeSetting } from './BlendModeSetting';
 import { BackgroundSetting } from './BackgroundSetting';
-import { GenerateActions } from './GenerateActions';
 
-// Define the type for sidebar setting tabs
-type SidebarSettingTab = 'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background';
 
 interface CreatorGenerationOptionsAndActionsSectionProps {
     generationProps: {
@@ -56,101 +55,37 @@ interface CreatorGenerationOptionsAndActionsSectionProps {
     printsProps: {
         selectedPrintFront: Print | undefined;
     };
-    activeSettingTab: SidebarSettingTab; // New prop
-    setActiveSettingTab: React.Dispatch<React.SetStateAction<SidebarSettingTab>>; // New prop
+    activeSettingTab: 'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background';
 }
 
 export const CreatorGenerationOptionsAndActionsSection: React.FC<CreatorGenerationOptionsAndActionsSectionProps> = ({
     generationProps,
-    actionsProps,
     printsProps,
     activeSettingTab,
-    setActiveSettingTab,
 }) => {
+    const { selectedClothing, selectedPrintFront } = printsProps; // Destructure selectedClothing from printsProps
     
-    const { selectedClothing } = generationProps;
-    const { selectedPrintFront } = printsProps;
-
+    // Pass selectedClothing and selectedPrintFront to ColorSetting
     const colorSettingProps = {
         ...generationProps,
-        selectedClothing: generationProps.selectedClothing,
-        selectedPrintFront: selectedPrintFront,
+        selectedClothing: generationProps.selectedClothing, // Ensure selectedClothing is passed
+        selectedPrintFront: selectedPrintFront, // Pass selectedPrintFront
     };
 
-    return (
-        <div className="flex flex-col h-full">
-            {/* Setting Tabs (buttons) */}
-            <div className="flex flex-col space-y-2 p-4 border-b border-gray-200 dark:border-gray-700">
-                <button 
-                    onClick={() => setActiveSettingTab('generationType')} 
-                    className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'generationType' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                >
-                    <PersonIcon className="h-5 w-5 flex-shrink-0" />
-                    <span className="text-sm">Tipo de Geração</span>
-                </button>
-                <button 
-                    onClick={() => setActiveSettingTab('aspectRatio')} 
-                    className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'aspectRatio' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                >
-                    <AspectRatioOneOneIcon className="h-5 w-5 flex-shrink-0" />
-                    <span className="text-sm">Proporção da Imagem</span>
-                </button>
-                <button 
-                    onClick={() => setActiveSettingTab('generationMode')} 
-                    className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'generationMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                >
-                    <UsersIcon className="h-5 w-5 flex-shrink-0" />
-                    <span className="text-sm">Lados para Gerar</span>
-                </button>
-                <button 
-                    onClick={() => setActiveSettingTab('color')} 
-                    className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'color' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                >
-                    <PaletteIcon className="h-5 w-5 flex-shrink-0" />
-                    <span className="text-sm">Cor da Roupa</span>
-                </button>
-                <button 
-                    onClick={() => setActiveSettingTab('blendMode')} 
-                    className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'blendMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                >
-                    <LayersIcon className="h-5 w-5 flex-shrink-0" />
-                    <span className="text-sm">Modo de Mesclagem</span>
-                </button>
-                <button 
-                    onClick={() => setActiveSettingTab('background')} 
-                    className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'background' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                >
-                    <ImageIcon className="h-5 w-5 flex-shrink-0" />
-                    <span className="text-sm">Fundo</span>
-                </button>
-            </div>
-
-            {/* Render active setting content */}
-            <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-900 p-4 space-y-4">
-                <div className={activeSettingTab === 'generationType' ? '' : 'hidden'}>
-                    <GenerationTypeSetting {...generationProps} />
-                </div>
-                <div className={activeSettingTab === 'aspectRatio' ? '' : 'hidden'}>
-                    <AspectRatioSetting {...generationProps} />
-                </div>
-                <div className={activeSettingTab === 'generationMode' ? '' : 'hidden'}>
-                    <GenerationModeSetting {...generationProps} />
-                </div>
-                <div className={activeSettingTab === 'color' ? '' : 'hidden'}>
-                    <ColorSetting {...colorSettingProps} />
-                </div>
-                <div className={activeSettingTab === 'blendMode' ? '' : 'hidden'}>
-                    <BlendModeSetting {...generationProps} />
-                </div>
-                <div className={activeSettingTab === 'background' ? '' : 'hidden'}>
-                    <BackgroundSetting {...generationProps} />
-                </div>
-            </div>
-
-            {/* Actions (fixed at the bottom) */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-                <GenerateActions {...actionsProps} />
-            </div>
-        </div>
-    );
+    switch (activeSettingTab) {
+        case 'generationType':
+            return <GenerationTypeSetting {...generationProps} />;
+        case 'aspectRatio':
+            return <AspectRatioSetting {...generationProps} />;
+        case 'generationMode':
+            return <GenerationModeSetting {...generationProps} />;
+        case 'color':
+            return <ColorSetting {...colorSettingProps} />;
+        case 'blendMode':
+            return <BlendModeSetting {...generationProps} />;
+        case 'background':
+            return <BackgroundSetting {...generationProps} />;
+        default:
+            return null;
+    }
 };

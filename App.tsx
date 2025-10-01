@@ -15,7 +15,7 @@ import { supabase } from './src/integrations/supabase/client';
 
 
 // Icons
-import { LogoIcon, SunIcon, MoonIcon, CreatorIcon, SparklesIcon, UsersIcon, GalleryIcon, SettingsIcon, MagicWandIcon, LightbulbIcon, ChevronLeftIcon, ChevronRightIcon, LayersIcon, XIcon } from './components/Icons';
+import { LogoIcon, SunIcon, MoonIcon, CreatorIcon, SparklesIcon, UsersIcon, GalleryIcon, SettingsIcon, MagicWandIcon, LightbulbIcon, ChevronLeftIcon, ChevronRightIcon, LayersIcon } from './components/Icons'; // FIX: Added LayersIcon
 
 // Page Components
 import { CreatorPage } from './components/CreatorPage';
@@ -24,7 +24,7 @@ import { AssociationsPage } from './components/AssociationsPage';
 import { SettingsPage } from './components/SettingsPage';
 import { ImageTreatmentPage } from './components/ImageTreatmentPage';
 import { InspirationGalleryPage } from './components/InspirationGalleryPage';
-import { LeftNavigation } from './src/components/LeftNavigation';
+import { LeftNavigation } from './src/components/LeftNavigation'; // Import LeftNavigation
 
 // Common UI Components
 import { Lightbox } from './components/Lightbox';
@@ -33,8 +33,8 @@ import { MaskCreator } from './components/MaskCreator';
 import { EditClothingNameModal } from './components/EditClothingNameModal';
 import { HistoryModal } from './components/HistoryModal';
 import { ResultDisplay } from './components/ResultDisplay';
-import { GenerateActions } from './components/sidebar/GenerateActions';
-import { CreatorGenerationOptionsAndActionsSection } from './src/components/sidebar/CreatorGenerationOptionsAndActionsSection';
+import { GenerateActions } from './components/sidebar/GenerateActions'; // Import GenerateActions for right sidebar
+import { CreatorGenerationOptionsAndActionsSection } from './src/components/sidebar/CreatorGenerationOptionsAndActionsSection'; // FIX: Added import for CreatorGenerationOptionsAndActionsSection
 
 // Types and Constants
 import {
@@ -42,7 +42,7 @@ import {
     GenerationType, GenerationMode, Pose, ActivePage, ModelFilter, ClothingToMask, ClothingToEdit,
     NewClothingFileState, ActiveNewClothingInputTab, ImportStatus, PromptSettings, MockupPrompts,
     NewClothingForm, BatchGenerationStatus, InspirationSettings, ColorPalette, PrintCombination,
-    CreatorPageProps, CreatorPagePrintsProps
+    CreatorPageProps // Import CreatorPageProps from types.ts
 } from './types';
 
 
@@ -142,10 +142,10 @@ const App: React.FC = () => {
   const [savedPrints, setSavedPrints] = useLocalStorage<Print[]>('ai-clothing-mockup-saved-prints', []);
   const [selectedPrintId, setSelectedPrintId] = useLocalStorage<string | null>('ai-clothing-mockup-selected-print-id', null);
   const [selectedPrintIdBack, setSelectedPrintIdBack] = useLocalStorage<string | null>('ai-clothing-mockup-selected-print-id-back', null);
-  const [savedMasks, setSavedMasks] = useState<SavedMask[]>([]);
+  const [savedMasks, setSavedMasks] = useState<SavedMask[]>([]); // Now managed by Supabase
   const [clothingCategories, setClothingCategories] = useLocalStorage<string[]>('ai-clothing-mockup-categories', initialClothingCategories);
   const [customColors, setCustomColors] = useLocalStorage<string[]>('ai-clothing-mockup-custom-colors', []);
-  const [savedImagePrompts, setSavedImagePrompts] = useState<SavedImagePrompt[]>([]);
+  const [savedImagePrompts, setSavedImagePrompts] = useState<SavedImagePrompt[]>([]); // Now managed by Supabase
   const [promptSettings, setPromptSettings] = useLocalStorage<PromptSettings>('ai-clothing-mockup-prompt-settings', defaultPromptSettings);
 
 
@@ -217,18 +217,8 @@ const App: React.FC = () => {
   const [isLeftNavExpanded, setIsLeftNavExpanded] = useState(false);
   // New state for right sidebar (CreatorPage settings)
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true); // Start open for CreatorPage
-  
-  // State for print drag and drop in CreatorPage (MOVED HERE)
-  const [isDraggingPrint, setIsDraggingPrint] = useState(false);
-  const printInputRef = useRef<HTMLInputElement>(null);
-
-  // State for ResultDisplay's internal zipping
-  const [isZippingResultDisplay, setIsZippingResultDisplay] = useState(false);
-
-  // State for active setting tab in CreatorPage's right sidebar
   const [activeSettingTab, setActiveSettingTab] = useState<'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'>('generationType');
-
-
+  
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
@@ -260,14 +250,14 @@ const App: React.FC = () => {
                 width: item.width,
                 height: item.height,
                 mask: item.mask,
-                originalBase64: item.original_base64 ?? undefined, // Corrected typo here and made optional
-                imageUrl: item.image_url ?? undefined,
-                base64Back: item.base64_back ?? undefined,
-                mimeTypeBack: item.mime_type_back ?? undefined,
-                widthBack: item.width_back ?? undefined,
-                heightBack: item.height_back ?? undefined,
-                maskBack: item.mask_back ?? undefined,
-                imageUrlBack: item.image_url_back ?? undefined,
+                originalBase64: item.original_base64,
+                imageUrl: item.image_url,
+                base64Back: item.base64_back,
+                mimeTypeBack: item.mime_type_back,
+                widthBack: item.width_back,
+                heightBack: item.height_back,
+                maskBack: item.mask_back,
+                imageUrlBack: item.image_url_back,
                 printCombinations: item.print_combinations || [],
                 isMinimizedInAssociations: item.is_minimized_in_associations || false,
             }));
@@ -1011,27 +1001,26 @@ const handleMaskCancel = () => {
 
         for (const clothing of savedClothes) {
             for (const combination of clothing.printCombinations) {
-                // Only process combinations that have at least one print assigned to a slot
-                if (combination.slots.length === 0 || !combination.slots.some(s => s.printId)) continue;
+                if (combination.slots.length === 0 || !combination.slots.find(s => s.type === 'front' && s.printId)) continue;
                 
-                // Use combination name for the folder
-                const folderName = combination.name.replace(/\.[^/.]+$/, "").replace(/[\/\?<>\\:\*\|":]/g, '_');
-                const subFolder = zip.folder(folderName);
-                if (!subFolder) throw new Error("Could not create subfolder in zip.");
+                const frontPrint = savedPrints.find(p => p.id === combination.slots.find(s => s.type === 'front')?.printId);
+                if (!frontPrint) continue;
+
+                const subFolderName = frontPrint.name.replace(/\.[^/.]+$/, "").replace(/[\/\?<>\\:\*\|":]/g, '_');
+                const subFolder = zip.folder(subFolderName);
+                if (!subFolder) continue;
                 
                 let frontCount = 0;
-                let backCount = 0;
                 for (const slot of combination.slots) {
                     const print = savedPrints.find(p => p.id === slot.printId);
-                    if (!print) continue; // Skip slots without a print
+                    if (!print) continue;
 
-                    let sideLabel = '';
+                    let sideName = '';
                     if (slot.type === 'front') {
                         frontCount++;
-                        sideLabel = `frente_${frontCount}`;
-                    } else { // 'back'
-                        backCount++;
-                        sideLabel = `costas_${backCount}`;
+                        sideName = `frente_variacao_${frontCount}`;
+                    } else {
+                        sideName = 'costas';
                     }
 
                     const clothingNameSanitized = clothing.name.replace(/[\/\?<>\\:\*\|":]/g, '_');
@@ -1042,10 +1031,7 @@ const handleMaskCancel = () => {
                     const height = slot.type === 'front' ? clothing.height : clothing.heightBack;
                     const mask = slot.type === 'front' ? clothing.mask : clothing.maskBack;
 
-                    if (!baseClothing || !mimeType || !width || !height) {
-                        console.warn(`Skipping preview for ${clothing.name} (${sideLabel}) due to missing clothing data.`);
-                        continue;
-                    }
+                    if (!baseClothing || !mimeType || !width || !height) continue;
 
                     const previewUrl = await createPrecompositeImage(
                        `data:${mimeType};base64,${baseClothing}`,
@@ -1058,7 +1044,7 @@ const handleMaskCancel = () => {
                     if (previewUrl) {
                        const jpgDataUrl = await pngDataUrlToJpgDataUrl(previewUrl);
                        const base64Data = jpgDataUrl.split(',')[1];
-                       const filename = `${clothingNameSanitized}_${sideLabel}.jpg`;
+                       const filename = `${clothingNameSanitized}_${sideName}.jpg`;
                        subFolder.file(filename, base64Data, { base64: true });
                        generatedCount++;
                     }
@@ -1091,14 +1077,12 @@ const handleMaskCancel = () => {
 
 const handleGenerateAssociationsBatch = useCallback(async () => {
     isBatchCancelled.current = false;
-    const generationTasks: { clothing: SavedClothing, combination: PrintCombination, slot: PrintCombination['slots'][number] }[] = [];
+    const generationTasks: { clothing: SavedClothing, combination: any }[] = [];
     
     for (const clothing of savedClothes) {
         for (const combination of clothing.printCombinations) {
-            for (const slot of combination.slots) {
-                if (slot.printId) { // Only add slots that actually have a print assigned
-                    generationTasks.push({ clothing, combination, slot });
-                }
+            if (combination.slots.some(s => s.printId)) {
+                generationTasks.push({ clothing, combination });
             }
         }
     }
@@ -1117,30 +1101,26 @@ const handleGenerateAssociationsBatch = useCallback(async () => {
         failed: 0,
     });
 
-    // Cache for the first generated front image of each combination, to be used as reference for back views
-    const generatedFrontImagesCache: { [combinationId: string]: string | undefined } = {};
-
     for (let i = 0; i < generationTasks.length; i++) {
         if (isBatchCancelled.current) {
             console.log("Geração em lote cancelada pelo usuário.");
             break;
         }
 
-        const { clothing, combination, slot } = generationTasks[i];
-        const print = savedPrints.find(p => p.id === slot.printId);
-        if (!print) {
-            setBatchGenerationStatus(prev => prev ? { ...prev, failed: prev.failed + 1 } : null);
-            continue;
-        }
-
-        const currentItemName = `${clothing.name} - ${combination.name} - ${slot.type === 'front' ? 'Frente' : 'Costas'} (${print.name})`;
+        const { clothing, combination } = generationTasks[i];
+        const currentItemName = `${clothing.name} - ${combination.name}`;
         
         setBatchGenerationStatus(prev => prev ? { ...prev, progress: i, currentItem: currentItemName } : null);
         
         try {
-            let generatedImageB64: string | undefined;
-            let referenceImageB64: string | undefined;
-            let referenceImageMime: string | undefined;
+            const frontSlot = combination.slots.find((s: any) => s.type === 'front' && s.printId);
+            const backSlot = combination.slots.find((s: any) => s.type === 'back' && s.printId);
+
+            const frontPrint = frontSlot ? savedPrints.find(p => p.id === frontSlot.printId) : undefined;
+            const backPrint = backSlot ? savedPrints.find(p => p.id === backSlot.printId) : undefined;
+
+            let finalImageUrls: string[] = [];
+            let frontResultB64: string | undefined;
 
             const backgroundThemeDescription = customBackgroundFile 
                 ? 'Use a imagem de fundo personalizada fornecida pelo usuário.' 
@@ -1151,7 +1131,7 @@ const handleGenerateAssociationsBatch = useCallback(async () => {
                 customBgData = { base64: await fileToBase64(customBackgroundFile), mimeType: customBackgroundFile.type };
             }
 
-            const tempCreatePreview = async (isBack: boolean) => {
+            const tempCreatePreview = async (print: Print, isBack: boolean) => {
                  const clothingBase64 = isBack ? clothing.base64Back : clothing.base64;
                  const clothingMimeType = isBack ? clothing.mimeTypeBack : clothing.mimeType;
                  const clothingDimensions = isBack ? {width: clothing.widthBack!, height: clothing.heightBack!} : {width: clothing.width, height: clothing.height};
@@ -1161,42 +1141,26 @@ const handleGenerateAssociationsBatch = useCallback(async () => {
                  return createPrecompositeImage(`data:${clothingMimeType};base64,${clothingBase64}`, printDataUrl, maskToUse, clothingDimensions, generationAspectRatio, selectedColor, blendMode);
             }
 
-            if (slot.type === 'front') {
-                if (!clothing.mask) {
-                    throw new Error("Máscara da frente não definida para a roupa.");
-                }
-                const precompositeUrl = await tempCreatePreview(false);
+            if (frontPrint && clothing.mask) {
+                const precompositeUrl = await tempCreatePreview(frontPrint, false);
                 const precomposite = await getPrecomposite(precompositeUrl);
                 if (!precomposite) throw new Error("Falha ao criar pré-composição da frente.");
 
-                generatedImageB64 = await generateMockup(promptSettings.mockup, precomposite.base64, precomposite.mimeType, undefined, selectedColor, backgroundThemeDescription, undefined, undefined, customBgData, false, true);
-                
-                // Cache the first generated front image for this combination
-                if (!generatedFrontImagesCache[combination.id]) {
-                    generatedFrontImagesCache[combination.id] = generatedImageB64;
-                }
-            } else { // slot.type === 'back'
-                if (!clothing.base64Back || !clothing.maskBack) {
-                    throw new Error("Imagem de costas ou máscara de costas não definida para a roupa.");
-                }
-                const precompositeUrlBack = await tempCreatePreview(true);
+                frontResultB64 = await generateMockup(promptSettings.mockup, precomposite.base64, precomposite.mimeType, undefined, selectedColor, backgroundThemeDescription, undefined, undefined, customBgData, false, true);
+                finalImageUrls.push(`data:image/png;base64,${frontResultB64}`);
+            }
+
+            if (backPrint && clothing.base64Back && clothing.maskBack) {
+                const precompositeUrlBack = await tempCreatePreview(backPrint, true);
                 const precompositeBack = await getPrecomposite(precompositeUrlBack);
                 if (!precompositeBack) throw new Error("Falha ao criar pré-composição das costas.");
                 
-                // Use the cached front image as reference if available for this combination
-                referenceImageB64 = generatedFrontImagesCache[combination.id];
-                referenceImageMime = referenceImageB64 ? 'image/png' : undefined;
-
-                generatedImageB64 = await generateMockup(promptSettings.mockup, precompositeBack.base64, precompositeBack.mimeType, undefined, selectedColor, backgroundThemeDescription, referenceImageB64, referenceImageMime, customBgData, !referenceImageB64, true);
+                const backResultB64 = await generateMockup(promptSettings.mockup, precompositeBack.base64, precompositeBack.mimeType, undefined, selectedColor, backgroundThemeDescription, frontResultB64, frontResultB64 ? 'image/png' : undefined, customBgData, !frontResultB64, true);
+                finalImageUrls.push(`data:image/png;base64,${backResultB64}`);
             }
 
-            if (generatedImageB64) {
-                const newHistoryItem: HistoryItem = { 
-                    id: crypto.randomUUID(), 
-                    date: new Date().toISOString(), 
-                    images: [`data:image/png;base64,${generatedImageB64}`], 
-                    name: currentItemName 
-                };
+            if (finalImageUrls.length > 0) {
+                const newHistoryItem: HistoryItem = { id: crypto.randomUUID(), date: new Date().toISOString(), images: finalImageUrls, name: currentItemName };
                 setGenerationHistory(prev => [newHistoryItem, ...prev].slice(0, 50));
                 setBatchGenerationStatus(prev => prev ? { ...prev, completed: prev.completed + 1 } : null);
             } else {
@@ -1576,8 +1540,8 @@ const handleCancelBatchGeneration = () => {
                 clothingCategories,
                 promptSettings,
                 customColors,
-                savedMasks: cleanSavedMasks,
-                savedImagePrompts: cleanSavedImagePrompts,
+                savedMasks: cleanSavedMasks, // Use fetched masks
+                savedImagePrompts: cleanSavedImagePrompts, // Use fetched prompts
                 dataType: 'mockup-creator-backup',
                 version: '2.4-colocated'
             };
@@ -1757,7 +1721,7 @@ const handleCancelBatchGeneration = () => {
                 id: item.id,
                 date: item.date,
                 original_print_id: item.originalPrintId,
-                generated_image_base66: item.generatedImage.base64,
+                generated_image_base64: item.generatedImage.base64,
                 generated_image_mime_type: item.generatedImage.mimeType,
                 prompt: item.prompt,
                 additional_images: item.additionalImages,
@@ -1789,6 +1753,7 @@ const handleCancelBatchGeneration = () => {
             localStorage.setItem('ai-clothing-mockup-categories', JSON.stringify(data.clothingCategories || initialClothingCategories));
             localStorage.setItem('ai-clothing-mockup-prompt-settings', JSON.stringify(data.promptSettings || defaultPromptSettings));
             localStorage.setItem('ai-clothing-mockup-custom-colors', JSON.stringify(data.customColors || []));
+            // localStorage.setItem('ai-clothing-mockup-saved-masks', JSON.stringify(data.savedMasks || [])); // No longer needed for local storage
             
             setImportStatus({ message: "Importação concluída com sucesso! Recarregando...", error: false, progress: 100 });
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -1848,32 +1813,6 @@ const handleCancelBatchGeneration = () => {
         setSavedClothes(prev => prev.map(c => c.id === clothingId ? { ...c, ...updates } : c));
     };
 
-    // --- Print Drag & Drop Handlers (moved from CreatorPage) ---
-    const handlePrintDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDraggingPrint(false);
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            handlePrintFilesChange(e.dataTransfer.files);
-        }
-    }, [handlePrintFilesChange]);
-    
-    const handlePrintDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDraggingPrint(true);
-    }, []);
-
-    const handlePrintDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDraggingPrint(false);
-    }, []);
-
-    const handleAddPrintClick = useCallback(() => {
-        printInputRef.current?.click();
-    }, []);
-
 
     // --- Filtered Data ---
     const filteredClothes = useMemo(() => {
@@ -1930,14 +1869,8 @@ const handleCancelBatchGeneration = () => {
             isRemovingBackground,
             selectedClothing,
             setEnlargedImage,
-            selectedPrintFront,
-            onAddPrintClick: handleAddPrintClick,
-            onPrintDrop: handlePrintDrop,
-            onPrintDragOver: handlePrintDragOver,
-            onPrintDragLeave: handlePrintDragLeave,
-            isDraggingPrint: isDraggingPrint,
-            printInputRef: printInputRef, // Pass the ref here
-        } as CreatorPagePrintsProps,
+            selectedPrintFront, // Pass derived state down
+        },
         generationProps: {
             generationType,
             setGenerationType,
@@ -1994,23 +1927,79 @@ const handleCancelBatchGeneration = () => {
         setIsHistoryModalOpen,
         generatedImageUrls,
         setGeneratedImageUrls,
+        isRightSidebarOpen, // Pass right sidebar state
+        setIsRightSidebarOpen, // Pass right sidebar setter
+        activeSettingTab, // Pass active setting tab
+        setActiveSettingTab, // Pass active setting tab setter
     };
     
-    const isResultDisplayActive = useMemo(() => generatedImageUrls.length > 0 && !isLoading, [generatedImageUrls, isLoading]);
+    const renderPage = () => {
+        if (generatedImageUrls.length > 0 && !isLoading) {
+            return (
+                <ResultDisplay
+                    imageUrls={generatedImageUrls}
+                    onReset={() => setGeneratedImageUrls([])}
+                    clothingName={selectedClothing?.name}
+                    printNameFront={selectedPrintFront?.name}
+                    printNameBack={selectedPrintBack?.name}
+                    generationMode={generationMode}
+                    generationType={generationType}
+                />
+            );
+        }
+
+        switch (activePage) {
+            case 'creator':
+                return <CreatorPage {...creatorPageProps} />;
+            case 'gallery':
+                return <GalleryPage history={generationHistory} onDelete={handleDeleteHistoryItem} onDeleteAll={handleDeleteAllHistory} onRestore={handleRestoreHistoryItem} />;
+            case 'associations':
+                return <AssociationsPage 
+                    savedClothes={savedClothes} 
+                    onUpdateClothing={handleUpdateClothing}
+                    savedPrints={savedPrints} 
+                    clothingCategories={clothingCategories}
+                    onBatchExport={handleGeneratePreviewsBatch}
+                    onDeleteClothing={handleDeleteClothing}
+                    onRenameClothing={setEditingClothingName}
+                    onUploadPrint={handlePrintFilesChange}
+                    onBatchGenerateMockups={handleGenerateAssociationsBatch}
+                    isBatchGenerating={!!batchGenerationStatus?.isActive}
+                />;
+            case 'settings':
+                return <SettingsPage 
+                    clothingCategories={clothingCategories} 
+                    setClothingCategories={setClothingCategories}
+                    promptSettings={promptSettings}
+                    setPromptSettings={setPromptSettings}
+                    defaultPromptSettings={defaultPromptSettings}
+                />;
+            case 'treatment':
+                 return <ImageTreatmentPage
+                    savedPrompts={savedImagePrompts}
+                    setSavedPrompts={setSavedImagePrompts}
+                />;
+            case 'inspiration':
+                return <InspirationGalleryPage onApplyStyle={handleApplyInspirationStyle} />;
+            default:
+                return <CreatorPage {...creatorPageProps} />;
+        }
+    };
 
     const leftNavWidth = isLeftNavExpanded ? 'w-60' : 'w-16';
-    const rightSidebarWidth = isRightSidebarOpen && activePage === 'creator' ? 'w-80' : 'w-0';
+    const rightSidebarWidth = isRightSidebarOpen ? 'w-80' : 'w-0';
     const mainContentMarginLeft = isLeftNavExpanded ? 'ml-60' : 'ml-16';
     const mainContentMarginRight = isRightSidebarOpen && activePage === 'creator' ? 'mr-80' : 'mr-0';
 
 
     return (
-        <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans flex">
+        <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans flex"> {/* Changed to flex */}
             <LeftNavigation activePage={activePage} setActivePage={setActivePage} isExpanded={isLeftNavExpanded} setIsExpanded={setIsLeftNavExpanded} />
 
             <div className={`flex-grow transition-all duration-300 ease-in-out ${mainContentMarginLeft} ${mainContentMarginRight}`}>
                 <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-40 shadow-md h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-4">
+                        {/* Title can remain here or be moved */}
                         <h1 className="text-xl font-bold text-gray-800 dark:text-white">Criador de Mockups</h1>
                     </div>
                     <div className="flex items-center">
@@ -2023,70 +2012,19 @@ const handleCancelBatchGeneration = () => {
                                 className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 ml-2"
                                 title={isRightSidebarOpen ? "Esconder Painel de Configurações" : "Mostrar Painel de Configurações"}
                             >
-                                <ChevronLeftIcon />
+                                {isRightSidebarOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                             </button>
                         )}
                     </div>
                 </header>
 
-                <main className="p-4 sm:p-6 lg:p-8 flex-grow">
-                    <div className={isResultDisplayActive ? '' : 'hidden'}>
-                        <ResultDisplay
-                            imageUrls={generatedImageUrls}
-                            onReset={() => setGeneratedImageUrls([])}
-                            clothingName={selectedClothing?.name}
-                            printNameFront={selectedPrintFront?.name}
-                            printNameBack={selectedPrintBack?.name}
-                            generationMode={generationMode}
-                            generationType={generationType}
-                            isZipping={isZippingResultDisplay}
-                            setIsZipping={setIsZippingResultDisplay}
-                        />
-                    </div>
-
-                    <div className={!isResultDisplayActive && activePage === 'creator' ? '' : 'hidden'}>
-                        <CreatorPage {...creatorPageProps} />
-                    </div>
-                    <div className={!isResultDisplayActive && activePage === 'gallery' ? '' : 'hidden'}>
-                        <GalleryPage history={generationHistory} onDelete={handleDeleteHistoryItem} onDeleteAll={handleDeleteAllHistory} onRestore={handleRestoreHistoryItem} />
-                    </div>
-                    <div className={!isResultDisplayActive && activePage === 'associations' ? '' : 'hidden'}>
-                        <AssociationsPage 
-                            savedClothes={savedClothes} 
-                            onUpdateClothing={handleUpdateClothing}
-                            savedPrints={savedPrints} 
-                            clothingCategories={clothingCategories}
-                            onBatchExport={handleGeneratePreviewsBatch}
-                            onDeleteClothing={handleDeleteClothing}
-                            onRenameClothing={setEditingClothingName}
-                            onUploadPrint={handlePrintFilesChange}
-                            onBatchGenerateMockups={handleGenerateAssociationsBatch}
-                            isBatchGenerating={!!batchGenerationStatus?.isActive}
-                        />
-                    </div>
-                    <div className={!isResultDisplayActive && activePage === 'settings' ? '' : 'hidden'}>
-                        <SettingsPage 
-                            clothingCategories={clothingCategories} 
-                            setClothingCategories={setClothingCategories}
-                            promptSettings={promptSettings}
-                            setPromptSettings={setPromptSettings}
-                            defaultPromptSettings={defaultPromptSettings}
-                        />
-                    </div>
-                    <div className={!isResultDisplayActive && activePage === 'treatment' ? '' : 'hidden'}>
-                         <ImageTreatmentPage
-                            savedPrompts={savedImagePrompts}
-                            setSavedPrompts={setSavedImagePrompts}
-                        />
-                    </div>
-                    <div className={!isResultDisplayActive && activePage === 'inspiration' ? '' : 'hidden'}>
-                        <InspirationGalleryPage onApplyStyle={handleApplyInspirationStyle} />
-                    </div>
+                <main className="p-4 sm:p-6 lg:p-8 flex-grow"> {/* Removed container mx-auto */}
+                    {renderPage()}
                 </main>
             </div>
 
             {/* Right Sidebar for CreatorPage settings */}
-            {activePage === 'creator' && isRightSidebarOpen && (
+            {activePage === 'creator' && (
                 <div className={`fixed top-0 right-0 h-full bg-gray-100 dark:bg-gray-800 shadow-2xl z-40 flex flex-col transition-all duration-300 ease-in-out ${rightSidebarWidth}`}>
                     <div className="flex items-center justify-between h-16 bg-gray-200 dark:bg-gray-900 px-4 flex-shrink-0">
                         <h2 className="text-lg font-bold text-gray-800 dark:text-white">Configurações de Geração</h2>
@@ -2095,16 +2033,67 @@ const handleCancelBatchGeneration = () => {
                             className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-700"
                             title="Fechar Painel"
                         >
-                            <XIcon />
+                            <ChevronRightIcon />
                         </button>
                     </div>
-                    <CreatorGenerationOptionsAndActionsSection 
-                        generationProps={creatorPageProps.generationProps}
-                        actionsProps={creatorPageProps.actionsProps}
-                        printsProps={creatorPageProps.printsProps}
-                        activeSettingTab={activeSettingTab} // Pass activeSettingTab
-                        setActiveSettingTab={setActiveSettingTab} // Pass setActiveSettingTab
-                    />
+                    <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900 p-4 space-y-4">
+                        {/* Setting Tabs */}
+                        <div className="flex flex-col space-y-2">
+                            <button 
+                                onClick={() => setActiveSettingTab('generationType')} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'generationType' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                            >
+                                <CreatorIcon className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-sm">Tipo de Geração</span>
+                            </button>
+                            <button 
+                                onClick={() => setActiveSettingTab('aspectRatio')} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'aspectRatio' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                            >
+                                <LightbulbIcon className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-sm">Proporção da Imagem</span>
+                            </button>
+                            <button 
+                                onClick={() => setActiveSettingTab('generationMode')} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'generationMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                            >
+                                <UsersIcon className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-sm">Lados para Gerar</span>
+                            </button>
+                            <button 
+                                onClick={() => setActiveSettingTab('color')} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'color' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                            >
+                                <SparklesIcon className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-sm">Cor da Roupa</span>
+                            </button>
+                            <button 
+                                onClick={() => setActiveSettingTab('blendMode')} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'blendMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                            >
+                                <LayersIcon className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-sm">Modo de Mesclagem</span>
+                            </button>
+                            <button 
+                                onClick={() => setActiveSettingTab('background')} 
+                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'background' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
+                            >
+                                <SettingsIcon className="h-5 w-5 flex-shrink-0" />
+                                <span className="text-sm">Fundo</span>
+                            </button>
+                        </div>
+                        
+                        {/* Render active setting content */}
+                        <CreatorGenerationOptionsAndActionsSection 
+                            generationProps={creatorPageProps.generationProps}
+                            actionsProps={creatorPageProps.actionsProps}
+                            printsProps={creatorPageProps.printsProps}
+                            activeSettingTab={activeSettingTab}
+                        />
+                    </div>
+                    <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                        <GenerateActions {...creatorPageProps.actionsProps} />
+                    </div>
                 </div>
             )}
 

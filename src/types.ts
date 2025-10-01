@@ -235,13 +235,6 @@ export interface CreatorPagePrintsProps {
     selectedClothing: SavedClothing | null;
     setEnlargedImage: React.Dispatch<React.SetStateAction<string | null>>;
     selectedPrintFront: Print | undefined;
-    // New props for print section interactions
-    onAddPrintClick: () => void;
-    onPrintDrop: (e: React.DragEvent<HTMLDivElement>) => void;
-    onPrintDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
-    onPrintDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
-    isDraggingPrint: boolean;
-    printInputRef: React.RefObject<HTMLInputElement>; // Added this line
 }
 
 export interface CreatorPageGenerationProps {

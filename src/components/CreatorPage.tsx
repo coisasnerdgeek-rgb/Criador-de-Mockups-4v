@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef, memo } from 'react';
-import { ImageUploader } from '@/components/ImageUploader';
-import { HistoryTimeline } from '@/components/HistoryTimeline';
-import { ZoomableImage } from '@/components/ZoomableImage';
-import { ImageCompareSlider } from '@/components/ImageCompareSlider';
+import { ImageUploader } from '@/components/ImageUploader'; // FIX: Corrected import path
+import { HistoryTimeline } from '@/components/HistoryTimeline'; // FIX: Corrected import path
+import { ZoomableImage } from '@/components/ZoomableImage'; // FIX: Corrected import path
+import { ImageCompareSlider } from '@/components/ImageCompareSlider'; // FIX: Corrected import path
 
 // Import new components
 import { ClothingItemCard } from './ClothingItemCard';
@@ -11,8 +11,8 @@ import { PrintItemCard } from './PrintItemCard';
 import { 
     SavedClothing, Print, Mask, HistoryItem, GenerationType, GenerationMode, Pose, ModelFilter, 
     PromptSettings, NewClothingFileState, ActiveNewClothingInputTab, NewClothingForm, ColorPalette,
-    ImageDimensions, ImageRect,
-    CreatorPageClothingProps, CreatorPagePrintsProps, CreatorPageGenerationProps, CreatorPageActionsProps, CreatorPageUIProps, CreatorPageProps
+    ImageDimensions, ImageRect, // Import new types
+    CreatorPageClothingProps, CreatorPagePrintsProps, CreatorPageGenerationProps, CreatorPageActionsProps, CreatorPageUIProps, CreatorPageProps // Import prop interfaces
 } from '../types';
 import { 
     LoadingSpinner, TrashIcon, PencilIcon, MagicWandIcon, DownloadIcon, ImageIcon, HistoryIcon, 
@@ -20,7 +20,16 @@ import {
     UsersIcon, PaletteIcon, NoBackgroundIcon, ClothingIcon, TagIcon, BookmarkIcon, PlusCircleIcon, 
     MinusCircleIcon, ResetIcon, RevertIcon, AspectRatioOneOneIcon, AspectRatioThreeFourIcon, 
     AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, ChevronLeftIcon, ChevronRightIcon, XIcon
-} from './Icons';
+} from './Icons'; // Added XIcon
+
+// Import new sidebar components
+import { GenerationTypeSetting } from './sidebar/GenerationTypeSetting.tsx';
+import { AspectRatioSetting } from './sidebar/AspectRatioSetting.tsx';
+import { GenerationModeSetting } from './sidebar/GenerationModeSetting.tsx';
+import { ColorSetting } from './sidebar/ColorSetting.tsx';
+import { BlendModeSetting } from './sidebar/BlendModeSetting.tsx';
+import { BackgroundSetting } from './sidebar/BackgroundSetting.tsx';
+import { GenerateActions } from './sidebar/GenerateActions.tsx';
 
 
 // --- Type Definitions ---
@@ -218,16 +227,21 @@ const CreatorClothingSection = memo((props: CreatorPageClothingProps) => {
     );
 });
 
-const CreatorPrintSection = memo((props: CreatorPagePrintsProps) => {
+const CreatorPrintSection = memo((props: CreatorPagePrintsProps & { 
+    onAddPrintClick: () => void;
+    onPrintDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+    onPrintDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
+    onPrintDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
+    isDraggingPrint: boolean;
+}) => {
     const { 
         printsToShow, selectedPrintId, selectedPrintIdBack, setSelectedPrintId, 
         setSelectedPrintIdBack, handlePrintFilesChange, printUploadError, 
         handleRemovePrintBg, isRemovingBackground, selectedClothing, 
         setEnlargedImage, handleDeletePrint, onAddPrintClick, onPrintDrop, 
-        onPrintDragOver, onPrintDragLeave, isDraggingPrint,
-        printInputRef // Destructure printInputRef from props
+        onPrintDragOver, onPrintDragLeave, isDraggingPrint 
     } = props;
-    // Removed local printInputRef: const printInputRef = useRef<HTMLInputElement>(null);
+    const printInputRef = useRef<HTMLInputElement>(null);
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex flex-col h-full">
@@ -254,27 +268,64 @@ const CreatorPrintSection = memo((props: CreatorPagePrintsProps) => {
     );
 });
 
+// Define the type for sidebar setting tabs
+type SidebarSettingTab = 'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'; // Removed 'generateActions'
+
 export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     const { 
         clothingProps, printsProps, generationProps, actionsProps, uiProps,
-        generationHistory, handleRestoreHistoryItem, setIsHistoryModalOpen
+        generationHistory, handleRestoreHistoryItem, setIsHistoryModalOpen,
+        isRightSidebarOpen, setIsRightSidebarOpen, activeSettingTab, setActiveSettingTab // Destructure new props
     } = props;
 
     const { selectedClothing } = clothingProps;
     const { precompositePreviewUrl, precompositePreviewUrlBack, precompositePreviewUrlBefore } = uiProps;
 
-    // Removed isSidebarOpen and activeSettingTab states
-    // Removed renderSettingContent function
+    const [isDraggingPrint, setIsDraggingPrint] = useState(false);
+    const printInputRef = useRef<HTMLInputElement>(null);
+
+    const handlePrintDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDraggingPrint(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            printsProps.handlePrintFilesChange(e.dataTransfer.files);
+        }
+    }, [printsProps.handlePrintFilesChange]);
+    
+    const handlePrintDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDraggingPrint(true);
+    }, []);
+
+    const handlePrintDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDraggingPrint(false);
+    }, []);
+
+    const handleAddPrintClick = useCallback(() => {
+        printInputRef.current?.click();
+    }, []);
+
+    // The renderSettingContent function is now handled by CreatorGenerationOptionsAndActionsSection
+    // and is no longer needed directly in CreatorPage.
 
     return (
         <div className="relative flex flex-col h-full">
             {/* Main content area */}
             <div className={`flex-grow flex flex-col`}>
-                <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 flex-grow`}>
+                <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 flex-grow`}> {/* Changed to 2 columns */}
                     {/* Column 1: Estampa & Inserir Roupas */}
                     <div className="flex flex-col gap-6">
                         <CreatorPrintSection 
                             {...printsProps} 
+                            onAddPrintClick={handleAddPrintClick}
+                            onPrintDrop={handlePrintDrop}
+                            onPrintDragOver={handlePrintDragOver}
+                            onPrintDragLeave={handlePrintDragLeave}
+                            isDraggingPrint={isDraggingPrint}
                         />
                         <CreatorClothingSection {...clothingProps} />
                     </div>
