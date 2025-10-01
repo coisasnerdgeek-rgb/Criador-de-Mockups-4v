@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal } from './Modal';
+import { Modal } from '@/components/Modal';
 import { HistoryItem } from '../types';
 import { TrashIcon, XIcon } from './Icons'; // Added XIcon
 

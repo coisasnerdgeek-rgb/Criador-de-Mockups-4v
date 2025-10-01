@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
-import { Modal } from './Modal';
+import { Modal } from '@/components/Modal';
 // FIX: Changed import to use types.ts
 import { Mask, SavedMask } from '../types';
 import { ResizeIcon, RotateIcon, CheckIcon, PencilIcon, TrashIcon, XIcon } from './Icons'; // Added XIcon

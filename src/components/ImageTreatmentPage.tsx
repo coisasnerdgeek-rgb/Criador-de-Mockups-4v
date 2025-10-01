@@ -2,10 +2,10 @@ import React, { useState, useMemo, useRef, useCallback, useEffect, memo } from '
 import { Print, SavedImagePrompt, TreatmentHistoryItem } from '../types';
 import { editImage } from '../services/geminiService';
 import { SparklesIcon, UploadIcon, LoadingSpinner, PencilIcon, TrashIcon, CheckIcon, DownloadIcon, RevertIcon, BookmarkIcon, MagicWandIcon, ImageIcon, PlusCircleIcon, HistoryIcon, AspectRatioOneOneIcon, AspectRatioThreeFourIcon, AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, XIcon } from './Icons'; // Added XIcon
-import { ZoomableImage } from './ZoomableImage';
-import { ImageCompareSlider } from './ImageCompareSlider';
+import { ZoomableImage } from '@/components/ZoomableImage';
+import { ImageCompareSlider } from '@/components/ImageCompareSlider';
 import { fileToBase64, pngDataUrlToJpgDataUrl, processAndValidateImageFile, downloadDataUrlAsJpg, getImageDimensionsFromUrl } from '../utils/fileUtils';
-import { supabase } from '../src/integrations/supabase/client'; // Import Supabase client
+import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
 import { Square } from 'lucide-react'; // Import Square directly from lucide-react for drawing tool
 
 // --- Memoized Child Components for Lists ---

@@ -4,30 +4,21 @@ import { SavedClothing, Print, PrintCombination } from '../types';
 import { createPrecompositeImage, downloadDataUrlAsJpg, pngDataUrlToJpgDataUrl } from '../utils/fileUtils';
 import { LoadingSpinner, PencilIcon, BookmarkIcon, TrashIcon, ZipIcon, PlusCircleIcon, MinusCircleIcon, DownloadIcon, UploadIcon, UsersIcon, MagicWandIcon } from './Icons';
 
-// Refatorado para receber printId e savedPrints
-const AssociationPreview = memo<{ clothing: SavedClothing; printId: string | null; side: 'front' | 'back'; savedPrints: Print[] }>(({ clothing, printId, side, savedPrints }) => {
+const AssociationPreview = memo<{ clothing: SavedClothing; print: Print | undefined, side: 'front' | 'back' }>(({ clothing, print, side }) => {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-
-    // Encontra a estampa com base no printId e savedPrints
-    const print = useMemo(() => savedPrints.find(p => p.id === printId), [printId, savedPrints]);
 
     useEffect(() => {
         let isMounted = true;
         setIsLoading(true);
         setPreviewUrl(null); // Reset preview URL on dependency change
 
-        // console.log(`[AssociationPreview - ${clothing.name} ${side}] useEffect triggered. PrintId: ${printId || 'none'}`);
-
         const generate = async () => {
+            // Add a small delay to allow browser to catch up, if many renders happen quickly
             await new Promise(resolve => setTimeout(resolve, 50)); 
-            if (!isMounted) {
-                // console.log(`[AssociationPreview - ${clothing.name} ${side}] Component unmounted before generation.`);
-                return;
-            }
+            if (!isMounted) return;
 
             if (!print) {
-                // console.log(`[AssociationPreview - ${clothing.name} ${side}] No print selected, showing base clothing image.`);
                 const sideImage = side === 'front' ? `data:${clothing.mimeType};base64,${clothing.base64}` : (clothing.base64Back ? `data:${clothing.mimeTypeBack};base64,${clothing.base64Back}`: null);
                 if (isMounted) {
                     setPreviewUrl(sideImage);
@@ -43,13 +34,11 @@ const AssociationPreview = memo<{ clothing: SavedClothing; printId: string | nul
             const clothingH = side === 'front' ? clothing.height : clothing.heightBack;
 
             if (!clothingBase || !clothingMime || !clothingW || !clothingH) {
-                // console.warn(`[AssociationPreview - ${clothing.name} ${side}] Missing clothing data for ${clothing.name} (${side}). Cannot generate preview.`);
                 if (isMounted) setIsLoading(false);
                 return;
             }
 
             try {
-                // console.log(`[AssociationPreview - ${clothing.name} ${side}] Calling createPrecompositeImage for print ${print.name}.`);
                 const url = await createPrecompositeImage(
                     `data:${clothingMime};base64,${clothingBase}`,
                     `data:${print.mimeType};base64,${print.base64}`,
@@ -59,10 +48,9 @@ const AssociationPreview = memo<{ clothing: SavedClothing; printId: string | nul
                 );
                 if (isMounted) {
                     setPreviewUrl(url);
-                    // console.log(`[AssociationPreview - ${clothing.name} ${side}] Preview URL set: ${url ? 'generated' : 'null'}`);
                 }
             } catch (e) {
-                console.error(`[AssociationPreview - ${clothing.name} ${side}] Preview failed for print ${print.name}:`, e);
+                console.error(`[AssociationPreview] Preview failed for ${clothing.name} (${side}) with print ${print.name}:`, e);
                 const sideImage = side === 'front' ? `data:${clothing.mimeType};base64,${clothing.base64}` : (clothing.base64Back ? `data:${clothing.mimeTypeBack};base64,${clothing.base64Back}`: null);
                 if (isMounted) setPreviewUrl(sideImage); // Fallback to clothing image
             } finally {
@@ -70,11 +58,8 @@ const AssociationPreview = memo<{ clothing: SavedClothing; printId: string | nul
             }
         };
         generate();
-        return () => { 
-            isMounted = false; 
-            // console.log(`[AssociationPreview - ${clothing.name} ${side}] Cleanup for print ${print?.name || 'none'}`);
-        };
-    }, [clothing, print, side]); // Dependências atualizadas para 'print' (que é um useMemo) e 'side'
+        return () => { isMounted = false; };
+    }, [clothing, print, side]);
 
     if (isLoading) {
         return (
@@ -299,9 +284,6 @@ const ClothingAssociationCard = memo<{
             {!clothing.isMinimizedInAssociations && (
                 <div className="space-y-8 animate-fade-in">
                     {clothing.printCombinations.map((combo) => {
-                        // Encontra os IDs das estampas para frente e costas
-                        const frontPrintId = combo.slots.find(s => s.type === 'front')?.printId;
-                        const backPrintId = combo.slots.find(s => s.type === 'back')?.printId;
                         const usedPrintIdsInCombo = new Set(combo.slots.map(s => s.printId).filter(Boolean));
 
                         return (
@@ -351,30 +333,30 @@ const ClothingAssociationCard = memo<{
                                     </div>
                                     <div className="col-span-12 md:col-span-7">
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div className="relative group aspect-square">
-                                                <AssociationPreview 
-                                                    key={`${clothing.id}-${combo.id}-${frontPrintId || 'no-print'}-front`}
-                                                    clothing={clothing} 
-                                                    printId={frontPrintId} // Passa o ID da estampa
-                                                    side="front" 
-                                                    savedPrints={savedPrints} // Passa a lista de estampas
-                                                />
-                                                <button onClick={() => onPreviewDownload(clothing, savedPrints.find(p => p.id === frontPrintId), 'front')} className="absolute bottom-2 right-2 bg-gray-800/60 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 hover:bg-cyan-500" title="Baixar prévia da frente"><DownloadIcon /></button>
-                                            </div>
-                                            <div className="relative group aspect-square">
-                                                {clothing.base64Back ? (
-                                                    <AssociationPreview 
-                                                        key={`${clothing.id}-${combo.id}-${backPrintId || 'no-print'}-back`}
-                                                        clothing={clothing} 
-                                                        printId={backPrintId} // Passa o ID da estampa
-                                                        side="back" 
-                                                        savedPrints={savedPrints} // Passa a lista de estampas
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center text-sm text-gray-500">Sem costas</div>
-                                                )}
-                                                {clothing.base64Back && <button onClick={() => onPreviewDownload(clothing, savedPrints.find(p => p.id === backPrintId), 'back')} className="absolute bottom-2 right-2 bg-gray-800/60 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 hover:bg-cyan-500" title="Baixar prévia das costas"><DownloadIcon /></button>}
-                                            </div>
+                                            {combo.slots.map((slot, index) => {
+                                                const print = savedPrints.find(p => p.id === slot.printId);
+                                                const isBackSlot = slot.type === 'back';
+                                                const canShowBackPreview = clothing.base64Back || !isBackSlot; // Only show back preview if back image exists or it's a front slot
+
+                                                return (
+                                                    <div key={slot.id} className="relative group aspect-square">
+                                                        {canShowBackPreview ? (
+                                                            <AssociationPreview 
+                                                                clothing={clothing} 
+                                                                print={print} 
+                                                                side={slot.type} 
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center text-sm text-gray-500">Sem costas</div>
+                                                        )}
+                                                        {print && canShowBackPreview && (
+                                                            <button onClick={() => onPreviewDownload(clothing, print, slot.type)} className="absolute bottom-2 right-2 bg-gray-800/60 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 hover:bg-cyan-500" title={`Baixar prévia da ${slot.type === 'front' ? 'frente' : 'costas'}`}>
+                                                                <DownloadIcon />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>

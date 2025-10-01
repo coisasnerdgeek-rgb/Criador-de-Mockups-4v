@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import JSZip from 'jszip';
 import { JpgIcon, PngIcon, RedoIcon, ZipIcon, LoadingSpinner } from './Icons';
-import { ZoomableImage } from './ZoomableImage';
+import { ZoomableImage } from '@/components/ZoomableImage';
 
 
 interface ResultDisplayProps {

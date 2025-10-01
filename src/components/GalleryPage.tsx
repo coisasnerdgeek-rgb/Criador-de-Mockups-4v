@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, memo } from 'react';
 import { HistoryItem } from '../types';
-import { Modal } from './Modal';
-import { ZoomableImage } from './ZoomableImage';
+import { Modal } from '@/components/Modal';
+import { ZoomableImage } from '@/components/ZoomableImage';
 import { DownloadIcon, GalleryIcon, TrashIcon, XIcon } from './Icons'; // Added XIcon
 
 // --- Gallery Page Optimization ---
