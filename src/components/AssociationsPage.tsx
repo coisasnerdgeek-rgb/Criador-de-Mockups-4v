@@ -284,7 +284,8 @@ const ClothingAssociationCard = memo<{
             {!clothing.isMinimizedInAssociations && (
                 <div className="space-y-8 animate-fade-in">
                     {clothing.printCombinations.map((combo) => {
-                        const usedPrintIdsInCombo = new Set(combo.slots.map(s => s.printId).filter(Boolean));
+                        // No longer filtering prints based on usedPrintIdsInCombo here
+                        // const usedPrintIdsInCombo = new Set(combo.slots.map(s => s.printId).filter(Boolean));
 
                         return (
                             <div key={combo.id} className="bg-gray-100/40 dark:bg-gray-900/40 p-4 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
@@ -317,7 +318,7 @@ const ClothingAssociationCard = memo<{
                                                 <div className="flex-grow">
                                                     <VisualPrintSelector
                                                         title={slot.type === 'front' ? `Frente ${combo.slots.filter(s => s.type === 'front').length > 1 ? `#${index+1}` : ''}` : `Costas`}
-                                                        prints={savedPrints.filter(p => !usedPrintIdsInCombo.has(p.id) || p.id === slot.printId)}
+                                                        prints={savedPrints} // Pass all saved prints
                                                         selectedPrintId={slot.printId}
                                                         onSelect={(printId) => handleUpdateSlotPrint(combo.id, slot.id, printId)}
                                                         onUpload={onUploadPrint}
