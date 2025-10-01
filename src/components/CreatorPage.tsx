@@ -22,15 +22,6 @@ import {
     AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, ChevronLeftIcon, ChevronRightIcon, XIcon
 } from './Icons';
 
-// Import new sidebar components (these will be used in App.tsx, not directly here anymore)
-// import { GenerationTypeSetting } from './sidebar/GenerationTypeSetting.tsx';
-// import { AspectRatioSetting } from './sidebar/AspectRatioSetting.tsx';
-// import { GenerationModeSetting } from './sidebar/GenerationModeSetting.tsx';
-// import { ColorSetting } from './sidebar/ColorSetting.tsx';
-// import { BlendModeSetting } from './sidebar/BlendModeSetting.tsx';
-// import { BackgroundSetting } from './sidebar/BackgroundSetting.tsx';
-// import { GenerateActions } from './sidebar/GenerateActions.tsx';
-
 
 // --- Type Definitions ---
 
@@ -233,9 +224,10 @@ const CreatorPrintSection = memo((props: CreatorPagePrintsProps) => {
         setSelectedPrintIdBack, handlePrintFilesChange, printUploadError, 
         handleRemovePrintBg, isRemovingBackground, selectedClothing, 
         setEnlargedImage, handleDeletePrint, onAddPrintClick, onPrintDrop, 
-        onPrintDragOver, onPrintDragLeave, isDraggingPrint 
+        onPrintDragOver, onPrintDragLeave, isDraggingPrint,
+        printInputRef // Destructure printInputRef from props
     } = props;
-    const printInputRef = useRef<HTMLInputElement>(null);
+    // Removed local printInputRef: const printInputRef = useRef<HTMLInputElement>(null);
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg flex flex-col h-full">
@@ -290,12 +282,7 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                     <div className="flex flex-col gap-6">
                         <CreatorPrintSection 
                             {...printsProps} 
-                            // Removed explicit passing of these props, as they are already in printsProps
-                            // onAddPrintClick={handleAddPrintClick}
-                            // onPrintDrop={handlePrintDrop}
-                            // onPrintDragOver={handlePrintDragOver}
-                            // onPrintDragLeave={handlePrintDragLeave}
-                            // isDraggingPrint={isDraggingPrint}
+                            // The props are now correctly passed via {...printsProps}
                         />
                         <CreatorClothingSection {...clothingProps} />
                     </div>

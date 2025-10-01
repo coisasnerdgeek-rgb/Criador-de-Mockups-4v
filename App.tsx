@@ -42,7 +42,7 @@ import {
     GenerationType, GenerationMode, Pose, ActivePage, ModelFilter, ClothingToMask, ClothingToEdit,
     NewClothingFileState, ActiveNewClothingInputTab, ImportStatus, PromptSettings, MockupPrompts,
     NewClothingForm, BatchGenerationStatus, InspirationSettings, ColorPalette, PrintCombination,
-    CreatorPageProps, CreatorPagePrintsProps // Import CreatorPagePrintsProps
+    CreatorPageProps, CreatorPagePrintsProps
 } from './types';
 
 
@@ -195,7 +195,7 @@ const App: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const loadingIntervalRef = useRef<number | null>(null);
 
-  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(enlargedImage); // FIX: Removed `enlargedImage` from `useState` initialization as it's already defined above.
 
   const [newClothingFileState, setNewClothingFileState] = useState<NewClothingFileState>({
     front: { isLoading: false, error: null, previewUrl: null },
@@ -1904,7 +1904,8 @@ const handleCancelBatchGeneration = () => {
             onPrintDragOver: handlePrintDragOver,
             onPrintDragLeave: handlePrintDragLeave,
             isDraggingPrint: isDraggingPrint,
-        } as CreatorPagePrintsProps, // Explicitly cast to CreatorPagePrintsProps
+            printInputRef: printInputRef, // Pass the ref here
+        } as CreatorPagePrintsProps,
         generationProps: {
             generationType,
             setGenerationType,

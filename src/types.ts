@@ -241,6 +241,7 @@ export interface CreatorPagePrintsProps {
     onPrintDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
     onPrintDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
     isDraggingPrint: boolean;
+    printInputRef: React.RefObject<HTMLInputElement>; // Added this line
 }
 
 export interface CreatorPageGenerationProps {
