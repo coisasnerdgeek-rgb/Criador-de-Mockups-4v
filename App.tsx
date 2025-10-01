@@ -219,7 +219,7 @@ const App: React.FC = () => {
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true); // Start open for CreatorPage
   const [activeSettingTab, setActiveSettingTab] = useState<'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'>('generationType');
   
-  // State for print drag and drop in CreatorPage
+  // State for print drag and drop in CreatorPage (MOVED HERE)
   const [isDraggingPrint, setIsDraggingPrint] = useState(false);
   const printInputRef = useRef<HTMLInputElement>(null);
 
@@ -254,14 +254,14 @@ const App: React.FC = () => {
                 width: item.width,
                 height: item.height,
                 mask: item.mask,
-                originalBase64: item.original_base64, // Corrected typo here
-                imageUrl: item.image_url,
-                base64Back: item.base64_back,
-                mimeTypeBack: item.mime_type_back,
-                widthBack: item.width_back,
-                heightBack: item.height_back,
-                maskBack: item.mask_back,
-                imageUrlBack: item.image_url_back,
+                originalBase64: item.original_base64 ?? undefined, // Corrected typo here and made optional
+                imageUrl: item.image_url ?? undefined,
+                base64Back: item.base64_back ?? undefined,
+                mimeTypeBack: item.mime_type_back ?? undefined,
+                widthBack: item.width_back ?? undefined,
+                heightBack: item.height_back ?? undefined,
+                maskBack: item.mask_back ?? undefined,
+                imageUrlBack: item.image_url_back ?? undefined,
                 printCombinations: item.print_combinations || [],
                 isMinimizedInAssociations: item.is_minimized_in_associations || false,
             }));
