@@ -1899,11 +1899,11 @@ const handleCancelBatchGeneration = () => {
             selectedClothing,
             setEnlargedImage,
             selectedPrintFront,
-            onAddPrintClick: handleAddPrintClick, // Pass down
-            onPrintDrop: handlePrintDrop, // Pass down
-            onPrintDragOver: handlePrintDragOver, // Pass down
-            onPrintDragLeave: handlePrintDragLeave, // Pass down
-            isDraggingPrint: isDraggingPrint, // Pass down
+            onAddPrintClick: handleAddPrintClick,
+            onPrintDrop: handlePrintDrop,
+            onPrintDragOver: handlePrintDragOver,
+            onPrintDragLeave: handlePrintDragLeave,
+            isDraggingPrint: isDraggingPrint,
         },
         generationProps: {
             generationType,

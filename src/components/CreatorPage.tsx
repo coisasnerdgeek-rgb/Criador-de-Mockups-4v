@@ -227,13 +227,7 @@ const CreatorClothingSection = memo((props: CreatorPageClothingProps) => {
     );
 });
 
-const CreatorPrintSection = memo((props: CreatorPagePrintsProps & { 
-    onAddPrintClick: () => void;
-    onPrintDrop: (e: React.DragEvent<HTMLDivElement>) => void;
-    onPrintDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
-    onPrintDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
-    isDraggingPrint: boolean;
-}) => {
+const CreatorPrintSection = memo((props: CreatorPagePrintsProps) => {
     const { 
         printsToShow, selectedPrintId, selectedPrintIdBack, setSelectedPrintId, 
         setSelectedPrintIdBack, handlePrintFilesChange, printUploadError, 
