@@ -74,25 +74,6 @@ export const CreatorGenerationOptionsAndActionsSection: React.FC<CreatorGenerati
         selectedPrintFront: selectedPrintFront,
     };
 
-    const renderSettingContent = () => {
-        switch (activeSettingTab) {
-            case 'generationType':
-                return <GenerationTypeSetting {...generationProps} />;
-            case 'aspectRatio':
-                return <AspectRatioSetting {...generationProps} />;
-            case 'generationMode':
-                return <GenerationModeSetting {...generationProps} />;
-            case 'color':
-                return <ColorSetting {...colorSettingProps} />;
-            case 'blendMode':
-                return <BlendModeSetting {...generationProps} />;
-            case 'background':
-                return <BackgroundSetting {...generationProps} />;
-            default:
-                return null;
-        }
-    };
-
     return (
         <div className="flex flex-col h-full">
             {/* Setting Tabs (buttons) */}
@@ -143,7 +124,24 @@ export const CreatorGenerationOptionsAndActionsSection: React.FC<CreatorGenerati
 
             {/* Render active setting content */}
             <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-900 p-4 space-y-4">
-                {renderSettingContent()}
+                <div className={activeSettingTab === 'generationType' ? '' : 'hidden'}>
+                    <GenerationTypeSetting {...generationProps} />
+                </div>
+                <div className={activeSettingTab === 'aspectRatio' ? '' : 'hidden'}>
+                    <AspectRatioSetting {...generationProps} />
+                </div>
+                <div className={activeSettingTab === 'generationMode' ? '' : 'hidden'}>
+                    <GenerationModeSetting {...generationProps} />
+                </div>
+                <div className={activeSettingTab === 'color' ? '' : 'hidden'}>
+                    <ColorSetting {...colorSettingProps} />
+                </div>
+                <div className={activeSettingTab === 'blendMode' ? '' : 'hidden'}>
+                    <BlendModeSetting {...generationProps} />
+                </div>
+                <div className={activeSettingTab === 'background' ? '' : 'hidden'}>
+                    <BackgroundSetting {...generationProps} />
+                </div>
             </div>
 
             {/* Actions (fixed at the bottom) */}
