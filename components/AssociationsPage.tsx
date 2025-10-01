@@ -278,8 +278,9 @@ const ClothingAssociationCard = memo<{
             {!clothing.isMinimizedInAssociations && (
                 <div className="space-y-8 animate-fade-in">
                     {clothing.printCombinations.map((combo) => {
-                        const frontPrint = savedPrints.find(p => p.id === combo.slots.find(s => s.type === 'front')?.printId);
-                        const backPrint = savedPrints.find(p => p.id === combo.slots.find(s => s.type === 'back')?.printId); // Definido aqui
+                        // Use useMemo to ensure frontPrint and backPrint are only re-calculated if dependencies change
+                        const frontPrint = useMemo(() => savedPrints.find(p => p.id === combo.slots.find(s => s.type === 'front')?.printId), [savedPrints, combo.slots]);
+                        const backPrint = useMemo(() => savedPrints.find(p => p.id === combo.slots.find(s => s.type === 'back')?.printId), [savedPrints, combo.slots]);
                         const usedPrintIdsInCombo = new Set(combo.slots.map(s => s.printId).filter(Boolean));
 
                         return (
@@ -375,7 +376,7 @@ interface AssociationsPageProps {
     onBatchExport: () => void;
     onDeleteClothing: (clothingId: string) => void;
     onRenameClothing: (clothing: SavedClothing) => void;
-    onUploadPrint: (files: FileList) => Promise<void>;
+    onUploadPrint: (files: FileList) => void;
     onBatchGenerateMockups: () => void;
     isBatchGenerating: boolean;
 }

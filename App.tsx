@@ -42,7 +42,7 @@ import {
     GenerationType, GenerationMode, Pose, ActivePage, ModelFilter, ClothingToMask, ClothingToEdit,
     NewClothingFileState, ActiveNewClothingInputTab, ImportStatus, PromptSettings, MockupPrompts,
     NewClothingForm, BatchGenerationStatus, InspirationSettings, ColorPalette, PrintCombination,
-    CreatorPageProps
+    CreatorPageProps, CreatorPagePrintsProps // Import CreatorPagePrintsProps
 } from './types';
 
 
@@ -678,7 +678,7 @@ const handleMaskCancel = () => {
     
     const handleAddBackImage = useCallback((clothing: SavedClothing) => {
         setClothingForBackImageId(clothing.id);
-        addBackImageInputRef.current?.click();
+        addBackImageInputInputRef.current?.click();
     }, []);
 
     const handleNewBackImageSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1904,7 +1904,7 @@ const handleCancelBatchGeneration = () => {
             onPrintDragOver: handlePrintDragOver,
             onPrintDragLeave: handlePrintDragLeave,
             isDraggingPrint: isDraggingPrint,
-        },
+        } as CreatorPagePrintsProps, // Explicitly cast to CreatorPagePrintsProps
         generationProps: {
             generationType,
             setGenerationType,
@@ -2041,7 +2041,7 @@ const handleCancelBatchGeneration = () => {
                                 className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 ml-2"
                                 title={isRightSidebarOpen ? "Esconder Painel de Configurações" : "Mostrar Painel de Configurações"}
                             >
-                                {isRightSidebarOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+                                <ChevronRightIcon />
                             </button>
                         )}
                     </div>
@@ -2065,7 +2065,7 @@ const handleCancelBatchGeneration = () => {
                             <ChevronRightIcon />
                         </button>
                     </div>
-                    <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-gray-900 p-4 space-y-4">
+                    <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-900 p-4 space-y-4">
                         {/* Setting Tabs */}
                         <div className="flex flex-col space-y-2">
                             <button 
