@@ -263,6 +263,9 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     const { selectedClothing } = clothingProps;
     const { precompositePreviewUrl, precompositePreviewUrlBack, precompositePreviewUrlBefore } = uiProps;
 
+    // Removed isSidebarOpen and activeSettingTab states
+    // Removed renderSettingContent function
+
     return (
         <div className="relative flex flex-col h-full">
             {/* Main content area */}
