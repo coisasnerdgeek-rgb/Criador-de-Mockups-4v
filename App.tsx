@@ -195,7 +195,7 @@ const App: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const loadingIntervalRef = useRef<number | null>(null);
 
-  const [enlargedImage, setEnlargedImage] = useState<string | null>(enlargedImage); // FIX: Removed `enlargedImage` from `useState` initialization as it's already defined above.
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null); // FIX: Initialized with null
 
   const [newClothingFileState, setNewClothingFileState] = useState<NewClothingFileState>({
     front: { isLoading: false, error: null, previewUrl: null },
@@ -1151,7 +1151,7 @@ const handleGenerateAssociationsBatch = useCallback(async () => {
                 if (!precomposite) throw new Error("Falha ao criar pré-composição da frente.");
 
                 frontResultB64 = await generateMockup(promptSettings.mockup, precomposite.base64, precomposite.mimeType, undefined, selectedColor, backgroundThemeDescription, undefined, undefined, customBgData, false, true);
-                finalImageUrls.push(`data:image/png;base64,${frontResultB64}`);
+                finalImageUrls.push(`data:image/png;base664,${frontResultB64}`);
             }
 
             if (backPrint && clothing.base64Back && clothing.maskBack) {
@@ -2042,7 +2042,7 @@ const handleCancelBatchGeneration = () => {
                                 className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 ml-2"
                                 title={isRightSidebarOpen ? "Esconder Painel de Configurações" : "Mostrar Painel de Configurações"}
                             >
-                                <ChevronRightIcon />
+                                <ChevronLeftIcon />
                             </button>
                         )}
                     </div>
@@ -2063,7 +2063,7 @@ const handleCancelBatchGeneration = () => {
                             className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-700"
                             title="Fechar Painel"
                         >
-                            <ChevronRightIcon />
+                            <XIcon />
                         </button>
                     </div>
                     <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-900 p-4 space-y-4">
