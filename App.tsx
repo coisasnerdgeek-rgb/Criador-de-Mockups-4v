@@ -15,7 +15,7 @@ import { supabase } from './src/integrations/supabase/client';
 
 
 // Icons
-import { LogoIcon, SunIcon, MoonIcon, CreatorIcon, SparklesIcon, UsersIcon, GalleryIcon, SettingsIcon, MagicWandIcon, LightbulbIcon, ChevronLeftIcon, ChevronRightIcon, LayersIcon } from './components/Icons';
+import { LogoIcon, SunIcon, MoonIcon, CreatorIcon, SparklesIcon, UsersIcon, GalleryIcon, SettingsIcon, MagicWandIcon, LightbulbIcon, ChevronLeftIcon, ChevronRightIcon, LayersIcon, XIcon } from './components/Icons';
 
 // Page Components
 import { CreatorPage } from './components/CreatorPage';
@@ -195,7 +195,7 @@ const App: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const loadingIntervalRef = useRef<number | null>(null);
 
-  const [enlargedImage, setEnlargedImage] = useState<string | null>(null); // FIX: Initialized with null
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
 
   const [newClothingFileState, setNewClothingFileState] = useState<NewClothingFileState>({
     front: { isLoading: false, error: null, previewUrl: null },
@@ -1474,7 +1474,7 @@ const handleCancelBatchGeneration = () => {
                 if (base64Back) {
                     const fileName = `clothing_${clothing.id}_back.png`;
                     imagesFolder.file(fileName, base64Back, { base64: true });
-                    cleanClothing.imagePathBack = `images/${fileName}`;
+                    cleanClothing.imagePathBack = `images/${fileName`;
                 }
                 if (originalBase64) {
                     const fileName = `clothing_${clothing.id}_original.png`;
