@@ -217,7 +217,6 @@ const App: React.FC = () => {
   const [isLeftNavExpanded, setIsLeftNavExpanded] = useState(false);
   // New state for right sidebar (CreatorPage settings)
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true); // Start open for CreatorPage
-  // const [activeSettingTab, setActiveSettingTab] = useState<'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'>('generationType'); // REMOVED
   
   // State for print drag and drop in CreatorPage (MOVED HERE)
   const [isDraggingPrint, setIsDraggingPrint] = useState(false);
@@ -1498,7 +1497,7 @@ const handleCancelBatchGeneration = () => {
                 if (base64) {
                     const fileName = `clothing_${clothing.id}_front.png`;
                     imagesFolder.file(fileName, base64, { base64: true });
-                    cleanClothing.imagePath = `images/${fileName}`;
+                    cleanClothing.imagePath = `images/${fileName`;
                 }
                 if (base64Back) {
                     const fileName = `clothing_${clothing.id}_back.png`;
@@ -1993,60 +1992,7 @@ const handleCancelBatchGeneration = () => {
         setGeneratedImageUrls,
     };
     
-    const renderPage = () => {
-        if (generatedImageUrls.length > 0 && !isLoading) {
-            return (
-                <ResultDisplay
-                    imageUrls={generatedImageUrls}
-                    onReset={() => setGeneratedImageUrls([])}
-                    clothingName={selectedClothing?.name}
-                    printNameFront={selectedPrintFront?.name}
-                    printNameBack={selectedPrintBack?.name}
-                    generationMode={generationMode}
-                    generationType={generationType}
-                    isZipping={isZippingResultDisplay} // Pass the state
-                    setIsZipping={setIsZippingResultDisplay} // Pass the setter
-                />
-            );
-        }
-
-        switch (activePage) {
-            case 'creator':
-                return <CreatorPage {...creatorPageProps} />;
-            case 'gallery':
-                return <GalleryPage history={generationHistory} onDelete={handleDeleteHistoryItem} onDeleteAll={handleDeleteAllHistory} onRestore={handleRestoreHistoryItem} />;
-            case 'associations':
-                return <AssociationsPage 
-                    savedClothes={savedClothes} 
-                    onUpdateClothing={handleUpdateClothing}
-                    savedPrints={savedPrints} 
-                    clothingCategories={clothingCategories}
-                    onBatchExport={handleGeneratePreviewsBatch}
-                    onDeleteClothing={handleDeleteClothing}
-                    onRenameClothing={setEditingClothingName}
-                    onUploadPrint={handlePrintFilesChange}
-                    onBatchGenerateMockups={handleGenerateAssociationsBatch}
-                    isBatchGenerating={!!batchGenerationStatus?.isActive}
-                />;
-            case 'settings':
-                return <SettingsPage 
-                    clothingCategories={clothingCategories} 
-                    setClothingCategories={setClothingCategories}
-                    promptSettings={promptSettings}
-                    setPromptSettings={setPromptSettings}
-                    defaultPromptSettings={defaultPromptSettings}
-                />;
-            case 'treatment':
-                 return <ImageTreatmentPage
-                    savedPrompts={savedImagePrompts}
-                    setSavedPrompts={setSavedImagePrompts}
-                />;
-            case 'inspiration':
-                return <InspirationGalleryPage onApplyStyle={handleApplyInspirationStyle} />;
-            default:
-                return <CreatorPage {...creatorPageProps} />;
-        }
-    };
+    const isResultDisplayActive = useMemo(() => generatedImageUrls.length > 0 && !isLoading, [generatedImageUrls, isLoading]);
 
     const leftNavWidth = isLeftNavExpanded ? 'w-60' : 'w-16';
     const rightSidebarWidth = isRightSidebarOpen && activePage === 'creator' ? 'w-80' : 'w-0';
@@ -2080,7 +2026,58 @@ const handleCancelBatchGeneration = () => {
                 </header>
 
                 <main className="p-4 sm:p-6 lg:p-8 flex-grow">
-                    {renderPage()}
+                    <div className={isResultDisplayActive ? '' : 'hidden'}>
+                        <ResultDisplay
+                            imageUrls={generatedImageUrls}
+                            onReset={() => setGeneratedImageUrls([])}
+                            clothingName={selectedClothing?.name}
+                            printNameFront={selectedPrintFront?.name}
+                            printNameBack={selectedPrintBack?.name}
+                            generationMode={generationMode}
+                            generationType={generationType}
+                            isZipping={isZippingResultDisplay}
+                            setIsZipping={setIsZippingResultDisplay}
+                        />
+                    </div>
+
+                    <div className={!isResultDisplayActive && activePage === 'creator' ? '' : 'hidden'}>
+                        <CreatorPage {...creatorPageProps} />
+                    </div>
+                    <div className={!isResultDisplayActive && activePage === 'gallery' ? '' : 'hidden'}>
+                        <GalleryPage history={generationHistory} onDelete={handleDeleteHistoryItem} onDeleteAll={handleDeleteAllHistory} onRestore={handleRestoreHistoryItem} />
+                    </div>
+                    <div className={!isResultDisplayActive && activePage === 'associations' ? '' : 'hidden'}>
+                        <AssociationsPage 
+                            savedClothes={savedClothes} 
+                            onUpdateClothing={handleUpdateClothing}
+                            savedPrints={savedPrints} 
+                            clothingCategories={clothingCategories}
+                            onBatchExport={handleGeneratePreviewsBatch}
+                            onDeleteClothing={handleDeleteClothing}
+                            onRenameClothing={setEditingClothingName}
+                            onUploadPrint={handlePrintFilesChange}
+                            onBatchGenerateMockups={handleGenerateAssociationsBatch}
+                            isBatchGenerating={!!batchGenerationStatus?.isActive}
+                        />
+                    </div>
+                    <div className={!isResultDisplayActive && activePage === 'settings' ? '' : 'hidden'}>
+                        <SettingsPage 
+                            clothingCategories={clothingCategories} 
+                            setClothingCategories={setClothingCategories}
+                            promptSettings={promptSettings}
+                            setPromptSettings={setPromptSettings}
+                            defaultPromptSettings={defaultPromptSettings}
+                        />
+                    </div>
+                    <div className={!isResultDisplayActive && activePage === 'treatment' ? '' : 'hidden'}>
+                         <ImageTreatmentPage
+                            savedPrompts={savedImagePrompts}
+                            setSavedPrompts={setSavedImagePrompts}
+                        />
+                    </div>
+                    <div className={!isResultDisplayActive && activePage === 'inspiration' ? '' : 'hidden'}>
+                        <InspirationGalleryPage onApplyStyle={handleApplyInspirationStyle} />
+                    </div>
                 </main>
             </div>
 
