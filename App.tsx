@@ -217,7 +217,7 @@ const App: React.FC = () => {
   const [isLeftNavExpanded, setIsLeftNavExpanded] = useState(false);
   // New state for right sidebar (CreatorPage settings)
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true); // Start open for CreatorPage
-  const [activeSettingTab, setActiveSettingTab] = useState<'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'>('generationType');
+  // const [activeSettingTab, setActiveSettingTab] = useState<'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'>('generationType'); // REMOVED
   
   // State for print drag and drop in CreatorPage (MOVED HERE)
   const [isDraggingPrint, setIsDraggingPrint] = useState(false);
@@ -2085,7 +2085,7 @@ const handleCancelBatchGeneration = () => {
             </div>
 
             {/* Right Sidebar for CreatorPage settings */}
-            {activePage === 'creator' && (
+            {activePage === 'creator' && isRightSidebarOpen && (
                 <div className={`fixed top-0 right-0 h-full bg-gray-100 dark:bg-gray-800 shadow-2xl z-40 flex flex-col transition-all duration-300 ease-in-out ${rightSidebarWidth}`}>
                     <div className="flex items-center justify-between h-16 bg-gray-200 dark:bg-gray-900 px-4 flex-shrink-0">
                         <h2 className="text-lg font-bold text-gray-800 dark:text-white">Configurações de Geração</h2>
@@ -2097,64 +2097,11 @@ const handleCancelBatchGeneration = () => {
                             <XIcon />
                         </button>
                     </div>
-                    <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 dark:scrollbar-track-900 p-4 space-y-4">
-                        {/* Setting Tabs */}
-                        <div className="flex flex-col space-y-2">
-                            <button 
-                                onClick={() => setActiveSettingTab('generationType')} 
-                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'generationType' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                            >
-                                <CreatorIcon className="h-5 w-5 flex-shrink-0" />
-                                <span className="text-sm">Tipo de Geração</span>
-                            </button>
-                            <button 
-                                onClick={() => setActiveSettingTab('aspectRatio')} 
-                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'aspectRatio' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                            >
-                                <LightbulbIcon className="h-5 w-5 flex-shrink-0" />
-                                <span className="text-sm">Proporção da Imagem</span>
-                            </button>
-                            <button 
-                                onClick={() => setActiveSettingTab('generationMode')} 
-                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'generationMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                            >
-                                <UsersIcon className="h-5 w-5 flex-shrink-0" />
-                                <span className="text-sm">Lados para Gerar</span>
-                            </button>
-                            <button 
-                                onClick={() => setActiveSettingTab('color')} 
-                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'color' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                            >
-                                <SparklesIcon className="h-5 w-5 flex-shrink-0" />
-                                <span className="text-sm">Cor da Roupa</span>
-                            </button>
-                            <button 
-                                onClick={() => setActiveSettingTab('blendMode')} 
-                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'blendMode' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                            >
-                                <LayersIcon className="h-5 w-5 flex-shrink-0" />
-                                <span className="text-sm">Modo de Mesclagem</span>
-                            </button>
-                            <button 
-                                onClick={() => setActiveSettingTab('background')} 
-                                className={`w-full p-2 rounded-md text-sm flex items-center gap-2 ${activeSettingTab === 'background' ? 'bg-purple-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'}`}
-                            >
-                                <SettingsIcon className="h-5 w-5 flex-shrink-0" />
-                                <span className="text-sm">Fundo</span>
-                            </button>
-                        </div>
-                        
-                        {/* Render active setting content */}
-                        <CreatorGenerationOptionsAndActionsSection 
-                            generationProps={creatorPageProps.generationProps}
-                            actionsProps={creatorPageProps.actionsProps}
-                            printsProps={creatorPageProps.printsProps}
-                            activeSettingTab={activeSettingTab}
-                        />
-                    </div>
-                    <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-                        <GenerateActions {...creatorPageProps.actionsProps} />
-                    </div>
+                    <CreatorGenerationOptionsAndActionsSection 
+                        generationProps={creatorPageProps.generationProps}
+                        actionsProps={creatorPageProps.actionsProps}
+                        printsProps={creatorPageProps.printsProps}
+                    />
                 </div>
             )}
 

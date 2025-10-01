@@ -263,16 +263,6 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
     const { selectedClothing } = clothingProps;
     const { precompositePreviewUrl, precompositePreviewUrlBack, precompositePreviewUrlBefore } = uiProps;
 
-    // Removed local state and refs for print drag-and-drop
-    // const [isDraggingPrint, setIsDraggingPrint] = useState(false);
-    // const printInputRef = useRef<HTMLInputElement>(null);
-
-    // Removed local handler definitions
-    // const handlePrintDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => { /* ... */ }, [printsProps.handlePrintFilesChange]);
-    // const handlePrintDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => { /* ... */ }, []);
-    // const handlePrintDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => { /* ... */ }, []);
-    // const handleAddPrintClick = useCallback(() => { /* ... */ }, []);
-
     return (
         <div className="relative flex flex-col h-full">
             {/* Main content area */}
@@ -282,7 +272,6 @@ export const CreatorPage: React.FC<CreatorPageProps> = (props) => {
                     <div className="flex flex-col gap-6">
                         <CreatorPrintSection 
                             {...printsProps} 
-                            // The props are now correctly passed via {...printsProps}
                         />
                         <CreatorClothingSection {...clothingProps} />
                     </div>
