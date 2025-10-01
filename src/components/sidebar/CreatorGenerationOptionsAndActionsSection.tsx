@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { LoadingSpinner, MagicWandIcon, ZipIcon, PersonIcon, PosesIcon, UsersIcon, AspectRatioOneOneIcon, AspectRatioThreeFourIcon, AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, PaletteIcon, LayersIcon, ImageIcon } from '@/components/Icons';
 import { GenerationType, GenerationMode, Pose, ModelFilter, PromptSettings, ColorPalette, Print, SavedClothing } from '../../types';
 import { GenerationTypeSetting } from './GenerationTypeSetting';
@@ -56,14 +56,17 @@ interface CreatorGenerationOptionsAndActionsSectionProps {
     printsProps: {
         selectedPrintFront: Print | undefined;
     };
+    activeSettingTab: SidebarSettingTab; // New prop
+    setActiveSettingTab: React.Dispatch<React.SetStateAction<SidebarSettingTab>>; // New prop
 }
 
 export const CreatorGenerationOptionsAndActionsSection: React.FC<CreatorGenerationOptionsAndActionsSectionProps> = ({
     generationProps,
     actionsProps,
     printsProps,
+    activeSettingTab,
+    setActiveSettingTab,
 }) => {
-    const [activeSettingTab, setActiveSettingTab] = useState<SidebarSettingTab>('generationType');
     
     const { selectedClothing } = generationProps;
     const { selectedPrintFront } = printsProps;

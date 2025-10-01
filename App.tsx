@@ -225,6 +225,10 @@ const App: React.FC = () => {
   // State for ResultDisplay's internal zipping
   const [isZippingResultDisplay, setIsZippingResultDisplay] = useState(false);
 
+  // State for active setting tab in CreatorPage's right sidebar
+  const [activeSettingTab, setActiveSettingTab] = useState<'generationType' | 'aspectRatio' | 'generationMode' | 'color' | 'blendMode' | 'background'>('generationType');
+
+
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
@@ -1497,7 +1501,7 @@ const handleCancelBatchGeneration = () => {
                 if (base64) {
                     const fileName = `clothing_${clothing.id}_front.png`;
                     imagesFolder.file(fileName, base64, { base64: true });
-                    cleanClothing.imagePath = `images/${fileName}`; // Fixed: Added closing backtick
+                    cleanClothing.imagePath = `images/${fileName}`;
                 }
                 if (base64Back) {
                     const fileName = `clothing_${clothing.id}_back.png`;
@@ -1753,7 +1757,7 @@ const handleCancelBatchGeneration = () => {
                 id: item.id,
                 date: item.date,
                 original_print_id: item.originalPrintId,
-                generated_image_base64: item.generatedImage.base64,
+                generated_image_base66: item.generatedImage.base64,
                 generated_image_mime_type: item.generatedImage.mimeType,
                 prompt: item.prompt,
                 additional_images: item.additionalImages,
@@ -2098,6 +2102,8 @@ const handleCancelBatchGeneration = () => {
                         generationProps={creatorPageProps.generationProps}
                         actionsProps={creatorPageProps.actionsProps}
                         printsProps={creatorPageProps.printsProps}
+                        activeSettingTab={activeSettingTab} // Pass activeSettingTab
+                        setActiveSettingTab={setActiveSettingTab} // Pass setActiveSettingTab
                     />
                 </div>
             )}
