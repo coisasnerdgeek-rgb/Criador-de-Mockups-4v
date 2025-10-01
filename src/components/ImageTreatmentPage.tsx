@@ -5,7 +5,7 @@ import { SparklesIcon, UploadIcon, LoadingSpinner, PencilIcon, TrashIcon, CheckI
 import { ZoomableImage } from '@/components/ZoomableImage';
 import { ImageCompareSlider } from '@/components/ImageCompareSlider';
 import { fileToBase64, pngDataUrlToJpgDataUrl, processAndValidateImageFile, downloadDataUrlAsJpg, getImageDimensionsFromUrl } from '../utils/fileUtils';
-import { supabase } from '../../integrations/supabase/client'; // Import Supabase client
+import { supabase } from '../integrations/supabase/client'; // Import Supabase client
 import { Square } from 'lucide-react'; // Import Square directly from lucide-react for drawing tool
 
 // --- Memoized Child Components for Lists ---
