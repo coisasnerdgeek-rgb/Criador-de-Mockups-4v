@@ -331,7 +331,7 @@ const ClothingAssociationCard = memo<{
                                     </div>
                                     <div className="col-span-12 md:col-span-7">
                                         <div className="grid grid-cols-2 gap-3">
-                                            {combo.slots.map((slot, index) => {
+                                            {combo.slots.map((slot, slotIndex) => {
                                                 const print = savedPrints.find(p => p.id === slot.printId);
                                                 const isBackSlot = slot.type === 'back';
                                                 const canShowBackPreview = clothing.base64Back || !isBackSlot; // Only show back preview if back image exists or it's a front slot
@@ -352,6 +352,10 @@ const ClothingAssociationCard = memo<{
                                                                 <DownloadIcon />
                                                             </button>
                                                         )}
+                                                        {/* Label for each slot preview */}
+                                                        <div className="absolute top-2 left-2 bg-black/60 text-white text-xs font-bold px-2 py-1 rounded-md">
+                                                            {slot.type === 'front' ? `Frente ${combo.slots.filter(s => s.type === 'front' && combo.slots.indexOf(s) <= slotIndex).length}` : `Costas ${combo.slots.filter(s => s.type === 'back' && combo.slots.indexOf(s) <= slotIndex).length}`}
+                                                        </div>
                                                     </div>
                                                 );
                                             })}
@@ -407,16 +411,28 @@ export const AssociationsPage: React.FC<AssociationsPageProps> = ({
 
     const handleExportCombination = useCallback(async (clothing: SavedClothing, combination: PrintCombination) => {
         const zip = new JSZip();
-        const frontPrintForFolderName = savedPrints.find(p => p.id === combination.slots.find(s => s.type === 'front')?.printId);
-        const folderName = (frontPrintForFolderName?.name || combination.name).replace(/\.[^/.]+$/, "").replace(/[\/\?<>\\:\*\|":]/g, '_');
+        // Use combination name for the folder
+        const folderName = combination.name.replace(/\.[^/.]+$/, "").replace(/[\/\?<>\\:\*\|":]/g, '_');
+        const subFolder = zip.folder(folderName);
+        if (!subFolder) throw new Error("Could not create subfolder in zip.");
         
         let frontCount = 0;
+        let backCount = 0;
         for (const slot of combination.slots) {
             const print = savedPrints.find(p => p.id === slot.printId);
             if (!print) continue;
 
-            const sideName = slot.type === 'front' ? `frente_var_${++frontCount}` : 'costas';
+            let sideLabel = '';
+            if (slot.type === 'front') {
+                frontCount++;
+                sideLabel = `frente_${frontCount}`;
+            } else { // 'back'
+                backCount++;
+                sideLabel = `costas_${backCount}`;
+            }
+
             const clothingNameSanitized = clothing.name.replace(/[\/\?<>\\:\*\|":]/g, '_');
+            
             const baseClothing = slot.type === 'front' ? clothing.base64 : clothing.base64Back;
             const mimeType = slot.type === 'front' ? clothing.mimeType : clothing.mimeTypeBack;
             const width = slot.type === 'front' ? clothing.width : clothing.widthBack;
@@ -425,10 +441,19 @@ export const AssociationsPage: React.FC<AssociationsPageProps> = ({
 
             if (!baseClothing || !mimeType || !width || !height) continue;
 
-            const previewUrl = await createPrecompositeImage(`data:${mimeType};base64,${baseClothing}`, `data:${print.mimeType};base64,${print.base64}`, mask, { width, height }, 'original', null, 'Normal');
+            const previewUrl = await createPrecompositeImage(
+               `data:${mimeType};base64,${baseClothing}`,
+               `data:${print.mimeType};base64,${print.base64}`,
+               mask,
+               { width, height },
+               'original', null, 'Normal'
+            );
+
             if (previewUrl) {
-                const jpgDataUrl = await pngDataUrlToJpgDataUrl(previewUrl);
-                zip.file(`${clothingNameSanitized}_${sideName}.jpg`, jpgDataUrl.split(',')[1], { base64: true });
+               const jpgDataUrl = await pngDataUrlToJpgDataUrl(previewUrl);
+               const base64Data = jpgDataUrl.split(',')[1];
+               const filename = `${clothingNameSanitized}_${sideLabel}.jpg`;
+               subFolder.file(filename, base64Data, { base64: true });
             }
         }
         
@@ -456,6 +481,12 @@ export const AssociationsPage: React.FC<AssociationsPageProps> = ({
         }
     }, []);
 
+    const handleBatchGenerateMockups = useCallback(async () => {
+        // This function is passed down from App.tsx, so we just call it.
+        // The actual batch generation logic is in App.tsx
+        onBatchGenerateMockups();
+    }, [onBatchGenerateMockups]);
+
     return (
         <div className="animate-fade-in space-y-8 max-w-7xl mx-auto">
             <div className="flex justify-between items-center">
@@ -463,7 +494,7 @@ export const AssociationsPage: React.FC<AssociationsPageProps> = ({
                 <div className="flex items-center gap-4">
                     <button onClick={onBatchExport} className="flex items-center gap-2 bg-purple-600 text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-purple-500"><ZipIcon/> Exportar Pré-visualizações</button>
                      <button 
-                        onClick={onBatchGenerateMockups} 
+                        onClick={handleBatchGenerateMockups} 
                         disabled={isBatchGenerating}
                         className="flex items-center gap-2 bg-green-600 text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-green-500 disabled:bg-gray-500/80 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
                     >

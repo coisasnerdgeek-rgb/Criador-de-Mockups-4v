@@ -1008,26 +1008,27 @@ const handleMaskCancel = () => {
 
         for (const clothing of savedClothes) {
             for (const combination of clothing.printCombinations) {
-                if (combination.slots.length === 0 || !combination.slots.find(s => s.type === 'front' && s.printId)) continue;
+                // Only process combinations that have at least one print assigned to a slot
+                if (combination.slots.length === 0 || !combination.slots.some(s => s.printId)) continue;
                 
-                const frontPrint = savedPrints.find(p => p.id === combination.slots.find(s => s.type === 'front')?.printId);
-                if (!frontPrint) continue;
-
-                const subFolderName = frontPrint.name.replace(/\.[^/.]+$/, "").replace(/[\/\?<>\\:\*\|":]/g, '_');
-                const subFolder = zip.folder(subFolderName);
-                if (!subFolder) continue;
+                // Use combination name for the folder
+                const folderName = combination.name.replace(/\.[^/.]+$/, "").replace(/[\/\?<>\\:\*\|":]/g, '_');
+                const subFolder = zip.folder(folderName);
+                if (!subFolder) throw new Error("Could not create subfolder in zip.");
                 
                 let frontCount = 0;
+                let backCount = 0;
                 for (const slot of combination.slots) {
                     const print = savedPrints.find(p => p.id === slot.printId);
-                    if (!print) continue;
+                    if (!print) continue; // Skip slots without a print
 
-                    let sideName = '';
+                    let sideLabel = '';
                     if (slot.type === 'front') {
                         frontCount++;
-                        sideName = `frente_variacao_${frontCount}`;
-                    } else {
-                        sideName = 'costas';
+                        sideLabel = `frente_${frontCount}`;
+                    } else { // 'back'
+                        backCount++;
+                        sideLabel = `costas_${backCount}`;
                     }
 
                     const clothingNameSanitized = clothing.name.replace(/[\/\?<>\\:\*\|":]/g, '_');
@@ -1038,7 +1039,10 @@ const handleMaskCancel = () => {
                     const height = slot.type === 'front' ? clothing.height : clothing.heightBack;
                     const mask = slot.type === 'front' ? clothing.mask : clothing.maskBack;
 
-                    if (!baseClothing || !mimeType || !width || !height) continue;
+                    if (!baseClothing || !mimeType || !width || !height) {
+                        console.warn(`Skipping preview for ${clothing.name} (${sideLabel}) due to missing clothing data.`);
+                        continue;
+                    }
 
                     const previewUrl = await createPrecompositeImage(
                        `data:${mimeType};base64,${baseClothing}`,
@@ -1051,7 +1055,7 @@ const handleMaskCancel = () => {
                     if (previewUrl) {
                        const jpgDataUrl = await pngDataUrlToJpgDataUrl(previewUrl);
                        const base64Data = jpgDataUrl.split(',')[1];
-                       const filename = `${clothingNameSanitized}_${sideName}.jpg`;
+                       const filename = `${clothingNameSanitized}_${sideLabel}.jpg`;
                        subFolder.file(filename, base64Data, { base64: true });
                        generatedCount++;
                     }
@@ -1084,12 +1088,14 @@ const handleMaskCancel = () => {
 
 const handleGenerateAssociationsBatch = useCallback(async () => {
     isBatchCancelled.current = false;
-    const generationTasks: { clothing: SavedClothing, combination: any }[] = [];
+    const generationTasks: { clothing: SavedClothing, combination: PrintCombination, slot: PrintCombination['slots'][number] }[] = [];
     
     for (const clothing of savedClothes) {
         for (const combination of clothing.printCombinations) {
-            if (combination.slots.some(s => s.printId)) {
-                generationTasks.push({ clothing, combination });
+            for (const slot of combination.slots) {
+                if (slot.printId) { // Only add slots that actually have a print assigned
+                    generationTasks.push({ clothing, combination, slot });
+                }
             }
         }
     }
@@ -1108,26 +1114,30 @@ const handleGenerateAssociationsBatch = useCallback(async () => {
         failed: 0,
     });
 
+    // Cache for the first generated front image of each combination, to be used as reference for back views
+    const generatedFrontImagesCache: { [combinationId: string]: string | undefined } = {};
+
     for (let i = 0; i < generationTasks.length; i++) {
         if (isBatchCancelled.current) {
             console.log("Geração em lote cancelada pelo usuário.");
             break;
         }
 
-        const { clothing, combination } = generationTasks[i];
-        const currentItemName = `${clothing.name} - ${combination.name}`;
+        const { clothing, combination, slot } = generationTasks[i];
+        const print = savedPrints.find(p => p.id === slot.printId);
+        if (!print) {
+            setBatchGenerationStatus(prev => prev ? { ...prev, failed: prev.failed + 1 } : null);
+            continue;
+        }
+
+        const currentItemName = `${clothing.name} - ${combination.name} - ${slot.type === 'front' ? 'Frente' : 'Costas'} (${print.name})`;
         
         setBatchGenerationStatus(prev => prev ? { ...prev, progress: i, currentItem: currentItemName } : null);
         
         try {
-            const frontSlot = combination.slots.find((s: any) => s.type === 'front' && s.printId);
-            const backSlot = combination.slots.find((s: any) => s.type === 'back' && s.printId);
-
-            const frontPrint = frontSlot ? savedPrints.find(p => p.id === frontSlot.printId) : undefined;
-            const backPrint = backSlot ? savedPrints.find(p => p.id === backSlot.printId) : undefined;
-
-            let finalImageUrls: string[] = [];
-            let frontResultB64: string | undefined;
+            let generatedImageB64: string | undefined;
+            let referenceImageB64: string | undefined;
+            let referenceImageMime: string | undefined;
 
             const backgroundThemeDescription = customBackgroundFile 
                 ? 'Use a imagem de fundo personalizada fornecida pelo usuário.' 
@@ -1138,7 +1148,7 @@ const handleGenerateAssociationsBatch = useCallback(async () => {
                 customBgData = { base64: await fileToBase64(customBackgroundFile), mimeType: customBackgroundFile.type };
             }
 
-            const tempCreatePreview = async (print: Print, isBack: boolean) => {
+            const tempCreatePreview = async (isBack: boolean) => {
                  const clothingBase64 = isBack ? clothing.base64Back : clothing.base64;
                  const clothingMimeType = isBack ? clothing.mimeTypeBack : clothing.mimeType;
                  const clothingDimensions = isBack ? {width: clothing.widthBack!, height: clothing.heightBack!} : {width: clothing.width, height: clothing.height};
@@ -1148,26 +1158,42 @@ const handleGenerateAssociationsBatch = useCallback(async () => {
                  return createPrecompositeImage(`data:${clothingMimeType};base64,${clothingBase64}`, printDataUrl, maskToUse, clothingDimensions, generationAspectRatio, selectedColor, blendMode);
             }
 
-            if (frontPrint && clothing.mask) {
-                const precompositeUrl = await tempCreatePreview(frontPrint, false);
+            if (slot.type === 'front') {
+                if (!clothing.mask) {
+                    throw new Error("Máscara da frente não definida para a roupa.");
+                }
+                const precompositeUrl = await tempCreatePreview(false);
                 const precomposite = await getPrecomposite(precompositeUrl);
                 if (!precomposite) throw new Error("Falha ao criar pré-composição da frente.");
 
-                frontResultB64 = await generateMockup(promptSettings.mockup, precomposite.base64, precomposite.mimeType, undefined, selectedColor, backgroundThemeDescription, undefined, undefined, customBgData, false, true);
-                finalImageUrls.push(`data:image/png;base664,${frontResultB64}`);
-            }
-
-            if (backPrint && clothing.base64Back && clothing.maskBack) {
-                const precompositeUrlBack = await tempCreatePreview(backPrint, true);
+                generatedImageB64 = await generateMockup(promptSettings.mockup, precomposite.base64, precomposite.mimeType, undefined, selectedColor, backgroundThemeDescription, undefined, undefined, customBgData, false, true);
+                
+                // Cache the first generated front image for this combination
+                if (!generatedFrontImagesCache[combination.id]) {
+                    generatedFrontImagesCache[combination.id] = generatedImageB64;
+                }
+            } else { // slot.type === 'back'
+                if (!clothing.base64Back || !clothing.maskBack) {
+                    throw new Error("Imagem de costas ou máscara de costas não definida para a roupa.");
+                }
+                const precompositeUrlBack = await tempCreatePreview(true);
                 const precompositeBack = await getPrecomposite(precompositeUrlBack);
                 if (!precompositeBack) throw new Error("Falha ao criar pré-composição das costas.");
                 
-                const backResultB64 = await generateMockup(promptSettings.mockup, precompositeBack.base64, precompositeBack.mimeType, undefined, selectedColor, backgroundThemeDescription, frontResultB64, frontResultB64 ? 'image/png' : undefined, customBgData, !frontResultB64, true);
-                finalImageUrls.push(`data:image/png;base64,${backResultB64}`);
+                // Use the cached front image as reference if available for this combination
+                referenceImageB64 = generatedFrontImagesCache[combination.id];
+                referenceImageMime = referenceImageB64 ? 'image/png' : undefined;
+
+                generatedImageB64 = await generateMockup(promptSettings.mockup, precompositeBack.base64, precompositeBack.mimeType, undefined, selectedColor, backgroundThemeDescription, referenceImageB64, referenceImageMime, customBgData, !referenceImageB64, true);
             }
 
-            if (finalImageUrls.length > 0) {
-                const newHistoryItem: HistoryItem = { id: crypto.randomUUID(), date: new Date().toISOString(), images: finalImageUrls, name: currentItemName };
+            if (generatedImageB64) {
+                const newHistoryItem: HistoryItem = { 
+                    id: crypto.randomUUID(), 
+                    date: new Date().toISOString(), 
+                    images: [`data:image/png;base64,${generatedImageB64}`], 
+                    name: currentItemName 
+                };
                 setGenerationHistory(prev => [newHistoryItem, ...prev].slice(0, 50));
                 setBatchGenerationStatus(prev => prev ? { ...prev, completed: prev.completed + 1 } : null);
             } else {
