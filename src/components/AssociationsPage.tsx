@@ -284,9 +284,6 @@ const ClothingAssociationCard = memo<{
             {!clothing.isMinimizedInAssociations && (
                 <div className="space-y-8 animate-fade-in">
                     {clothing.printCombinations.map((combo) => {
-                        // No longer filtering prints based on usedPrintIdsInCombo here
-                        // const usedPrintIdsInCombo = new Set(combo.slots.map(s => s.printId).filter(Boolean));
-
                         return (
                             <div key={combo.id} className="bg-gray-100/40 dark:bg-gray-900/40 p-4 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
                                 <div className="flex justify-between items-center mb-4">
