@@ -1474,7 +1474,7 @@ const handleCancelBatchGeneration = () => {
                 if (base64Back) {
                     const fileName = `clothing_${clothing.id}_back.png`;
                     imagesFolder.file(fileName, base64Back, { base64: true });
-                    cleanClothing.imagePathBack = `images/${fileName`;
+                    cleanClothing.imagePathBack = `images/${fileName}`;
                 }
                 if (originalBase64) {
                     const fileName = `clothing_${clothing.id}_original.png`;
@@ -1899,11 +1899,11 @@ const handleCancelBatchGeneration = () => {
             selectedClothing,
             setEnlargedImage,
             selectedPrintFront,
-            onAddPrintClick,
-            onPrintDrop,
-            onPrintDragOver,
-            onPrintDragLeave,
-            isDraggingPrint,
+            onAddPrintClick: handleAddPrintClick,
+            onPrintDrop: handlePrintDrop,
+            onPrintDragOver: handlePrintDragOver,
+            onPrintDragLeave: handlePrintDragLeave,
+            isDraggingPrint: isDraggingPrint,
         },
         generationProps: {
             generationType,
