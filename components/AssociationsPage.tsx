@@ -279,6 +279,7 @@ const ClothingAssociationCard = memo<{
                 <div className="space-y-8 animate-fade-in">
                     {clothing.printCombinations.map((combo) => {
                         const frontPrint = savedPrints.find(p => p.id === combo.slots.find(s => s.type === 'front')?.printId);
+                        const backPrint = savedPrints.find(p => p.id === combo.slots.find(s => s.type === 'back')?.printId); // Definido aqui
                         const usedPrintIdsInCombo = new Set(combo.slots.map(s => s.printId).filter(Boolean));
 
                         return (
@@ -329,12 +330,26 @@ const ClothingAssociationCard = memo<{
                                     <div className="col-span-12 md:col-span-7">
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="relative group aspect-square">
-                                                <AssociationPreview clothing={clothing} print={frontPrint} side="front" />
+                                                <AssociationPreview 
+                                                    key={`${clothing.id}-${combo.id}-${frontPrint?.id || 'no-print'}-front`}
+                                                    clothing={clothing} 
+                                                    print={frontPrint} 
+                                                    side="front" 
+                                                />
                                                 <button onClick={() => onPreviewDownload(clothing, frontPrint, 'front')} className="absolute bottom-2 right-2 bg-gray-800/60 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 hover:bg-cyan-500" title="Baixar prévia da frente"><DownloadIcon /></button>
                                             </div>
                                             <div className="relative group aspect-square">
-                                                {clothing.base64Back ? <AssociationPreview clothing={clothing} print={savedPrints.find(p => p.id === combo.slots.find(s => s.type === 'back')?.printId)} side="back" /> : <div className="w-full h-full bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center text-sm text-gray-500">Sem costas</div>}
-                                                {clothing.base64Back && <button onClick={() => onPreviewDownload(clothing, savedPrints.find(p => p.id === combo.slots.find(s => s.type === 'back')?.printId), 'back')} className="absolute bottom-2 right-2 bg-gray-800/60 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 hover:bg-cyan-500" title="Baixar prévia das costas"><DownloadIcon /></button>}
+                                                {clothing.base64Back ? (
+                                                    <AssociationPreview 
+                                                        key={`${clothing.id}-${combo.id}-${backPrint?.id || 'no-print'}-back`}
+                                                        clothing={clothing} 
+                                                        print={backPrint} 
+                                                        side="back" 
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center text-sm text-gray-500">Sem costas</div>
+                                                )}
+                                                {clothing.base64Back && <button onClick={() => onPreviewDownload(clothing, backPrint, 'back')} className="absolute bottom-2 right-2 bg-gray-800/60 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 hover:bg-cyan-500" title="Baixar prévia das costas"><DownloadIcon /></button>}
                                             </div>
                                         </div>
                                     </div>

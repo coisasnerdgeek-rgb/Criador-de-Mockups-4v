@@ -254,7 +254,7 @@ const App: React.FC = () => {
                 width: item.width,
                 height: item.height,
                 mask: item.mask,
-                originalBase64: item.original_base64,
+                originalBase64: item.original_base664,
                 imageUrl: item.image_url,
                 base64Back: item.base64_back,
                 mimeTypeBack: item.mime_type_back,
