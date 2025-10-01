@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Print } from '@/types';
+import { Print } from '../types';
 import { CheckIcon, TrashIcon, MagicWandIcon, LoadingSpinner } from '@/components/Icons';
 
 interface PrintItemCardProps {

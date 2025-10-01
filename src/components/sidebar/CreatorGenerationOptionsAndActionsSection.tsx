@@ -1,6 +1,6 @@
 import React from 'react';
 import { LoadingSpinner, MagicWandIcon, ZipIcon, PersonIcon, PosesIcon, UsersIcon, AspectRatioOneOneIcon, AspectRatioThreeFourIcon, AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon, PaletteIcon, LayersIcon, ImageIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/Icons';
-import { GenerationType, GenerationMode, Pose, ModelFilter, PromptSettings, ColorPalette, Print, SavedClothing } from '@/types';
+import { GenerationType, GenerationMode, Pose, ModelFilter, PromptSettings, ColorPalette, Print, SavedClothing } from '../types';
 import { ColorPicker } from '@/components/ColorPicker';
 import { ImageUploader } from '@/components/ImageUploader';
 import { GenerationTypeSetting } from './GenerationTypeSetting';

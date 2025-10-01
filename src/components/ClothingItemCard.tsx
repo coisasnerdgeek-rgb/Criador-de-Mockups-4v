@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { SavedClothing } from '@/types';
+import { SavedClothing } from '../types';
 import { PencilIcon, TrashIcon, PositionIcon, PlusCircleIcon, AspectRatioFreeIcon } from '@/components/Icons'; // Changed Maximize to AspectRatioFreeIcon
 
 interface ClothingItemCardProps {

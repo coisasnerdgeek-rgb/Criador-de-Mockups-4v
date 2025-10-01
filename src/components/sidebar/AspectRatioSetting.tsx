@@ -1,5 +1,5 @@
 import React from 'react';
-import { AspectRatioOneOneIcon, AspectRatioThreeFourIcon, AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon } from '../Icons';
+import { AspectRatioOneOneIcon, AspectRatioThreeFourIcon, AspectRatioFourThreeIcon, AspectRatioNineSixteenIcon, AspectRatioSixteenNineIcon } from '@/components/Icons';
 
 interface AspectRatioSettingProps {
     generationAspectRatio: string;
