@@ -678,7 +678,7 @@ const handleMaskCancel = () => {
     
     const handleAddBackImage = useCallback((clothing: SavedClothing) => {
         setClothingForBackImageId(clothing.id);
-        addBackImageInputInputRef.current?.click();
+        addBackImageInputRef.current?.click();
     }, []);
 
     const handleNewBackImageSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
