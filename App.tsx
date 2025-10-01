@@ -223,6 +223,9 @@ const App: React.FC = () => {
   const [isDraggingPrint, setIsDraggingPrint] = useState(false);
   const printInputRef = useRef<HTMLInputElement>(null);
 
+  // State for ResultDisplay's internal zipping
+  const [isZippingResultDisplay, setIsZippingResultDisplay] = useState(false);
+
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
@@ -1975,6 +1978,8 @@ const handleCancelBatchGeneration = () => {
                     printNameBack={selectedPrintBack?.name}
                     generationMode={generationMode}
                     generationType={generationType}
+                    isZipping={isZippingResultDisplay} // Pass the state
+                    setIsZipping={setIsZippingResultDisplay} // Pass the setter
                 />
             );
         }

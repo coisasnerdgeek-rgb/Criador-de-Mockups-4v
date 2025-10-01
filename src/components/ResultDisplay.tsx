@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import JSZip from 'jszip';
 import { JpgIcon, PngIcon, RedoIcon, ZipIcon, LoadingSpinner } from './Icons';
 import { ZoomableImage } from '@/components/ZoomableImage';
@@ -12,10 +12,12 @@ interface ResultDisplayProps {
   printNameBack?: string;
   generationMode?: 'front' | 'back' | 'both';
   generationType?: 'standard' | 'poses-3' | 'models';
+  isZipping: boolean; // Added prop
+  setIsZipping: React.Dispatch<React.SetStateAction<boolean>>; // Added prop
 }
 
-export const ResultDisplay: React.FC<ResultDisplayProps> = ({ imageUrls, onReset, clothingName, printNameFront, printNameBack, generationMode, generationType }) => {
-  const [isZipping, setIsZipping] = useState(false);
+export const ResultDisplay: React.FC<ResultDisplayProps> = ({ imageUrls, onReset, clothingName, printNameFront, printNameBack, generationMode, generationType, isZipping, setIsZipping }) => {
+  // Removed local state: const [isZipping, setIsZipping] = useState(false);
 
   const getFilename = (index: number, extension: 'png' | 'jpg'): string => {
     const cName = (clothingName || 'mockup').replace(/[\/\?<>\\:\*\|":]/g, '_');
