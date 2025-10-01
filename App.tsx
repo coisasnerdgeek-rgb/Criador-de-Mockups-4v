@@ -1497,7 +1497,7 @@ const handleCancelBatchGeneration = () => {
                 if (base64) {
                     const fileName = `clothing_${clothing.id}_front.png`;
                     imagesFolder.file(fileName, base64, { base64: true });
-                    cleanClothing.imagePath = `images/${fileName`;
+                    cleanClothing.imagePath = `images/${fileName}`; // Fixed: Added closing backtick
                 }
                 if (base64Back) {
                     const fileName = `clothing_${clothing.id}_back.png`;
